@@ -136,6 +136,42 @@
   .mat-mdc-row:hover {
     background-color: #f5f5f5;
   }
+
+  // Estilos para la paginación
+  mat-paginator {
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    
+    .mat-mdc-paginator-container {
+      padding: 8px 16px;
+    }
+    
+    .mat-mdc-paginator-page-size {
+      margin-right: 16px;
+      
+      .mat-mdc-form-field {
+        margin: 0;
+        min-width: 80px;
+      }
+    }
+    
+    .mat-mdc-paginator-range-actions {
+      margin-left: auto;
+    }
+
+    // Estilos para el selector de página
+    .mat-mdc-select {
+      min-width: 60px;
+    }
+
+    // Estilos para los botones de navegación
+    .mat-mdc-paginator-navigation-previous,
+    .mat-mdc-paginator-navigation-next,
+    .mat-mdc-paginator-navigation-first,
+    .mat-mdc-paginator-navigation-last {
+      margin: 0 4px;
+    }
+  }
 }
 
 .cards-view {

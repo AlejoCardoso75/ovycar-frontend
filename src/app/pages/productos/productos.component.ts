@@ -84,10 +84,89 @@ export class ProductosComponent implements OnInit, AfterViewInit {
     this.loadProductos();
   }
 
+  setupTable(): void {
+    // Configurar el paginador
+    this.dataSource.paginator = this.paginator;
+    
+    // Configurar el ordenamiento
+    this.dataSource.sort = this.sort;
+    
+    // Configurar el filtro personalizado
+    this.dataSource.filterPredicate = (data: ProductoDTO, filter: string) => {
+      const searchTerm = filter.toLowerCase();
+      return data.nombre.toLowerCase().includes(searchTerm) ||
+             data.codigo.toLowerCase().includes(searchTerm) ||
+             (data.categoria ? data.categoria.toLowerCase().includes(searchTerm) : false) ||
+             (data.marca ? data.marca.toLowerCase().includes(searchTerm) : false);
+    };
+
+    // Suscribirse a cambios en la paginación
+    if (this.paginator) {
+      this.paginator.page.subscribe((event) => {
+        console.log('Evento de paginación:', event);
+        console.log('Página actual:', event.pageIndex);
+        console.log('Elementos por página:', event.pageSize);
+        console.log('Longitud total:', event.length);
+        
+        // Forzar la actualización de la tabla
+        this.dataSource._updateChangeSubscription();
+      });
+    }
+  }
+
+  // Método para verificar el estado de la paginación
+  checkPaginationStatus(): void {
+    if (this.paginator) {
+      console.log('=== Estado de Paginación ===');
+      console.log('Tamaño de página:', this.paginator.pageSize);
+      console.log('Página actual:', this.paginator.pageIndex);
+      console.log('Total de elementos:', this.paginator.length);
+      console.log('Elementos en dataSource:', this.dataSource.data.length);
+      console.log('Elementos mostrados:', this.dataSource.data.slice(
+        this.paginator.pageIndex * this.paginator.pageSize,
+        (this.paginator.pageIndex + 1) * this.paginator.pageSize
+      ).length);
+      console.log('==========================');
+    }
+  }
+
+  // Método para manejar cambios en la paginación
+  onPageChange(event: any): void {
+    console.log('Cambio en paginación:', event);
+    console.log('Nueva página:', event.pageIndex);
+    console.log('Nuevo tamaño de página:', event.pageSize);
+    
+    // Actualizar la tabla
+    this.dataSource._updateChangeSubscription();
+    
+    // Verificar el estado después del cambio
+    setTimeout(() => {
+      this.checkPaginationStatus();
+    }, 0);
+  }
+
+  // Método para manejar cambios en el tamaño de página
+  onPageSizeChange(event: any): void {
+    console.log('Cambio en tamaño de página:', event);
+    if (this.paginator) {
+      this.paginator.pageSize = event.value;
+      this.paginator.firstPage();
+      this.dataSource._updateChangeSubscription();
+    }
+  }
+
   ngAfterViewInit(): void {
     console.log('ProductosComponent ngAfterViewInit llamado');
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    // Usar setTimeout para asegurar que los ViewChild estén disponibles
+    setTimeout(() => {
+      this.setupTable();
+      // Asegurar que el paginador esté configurado correctamente
+      if (this.paginator) {
+        this.paginator.pageSize = 5; // Establecer 5 elementos por página por defecto
+        this.paginator.pageIndex = 0; // Ir a la primera página
+        this.dataSource._updateChangeSubscription();
+      }
+    }, 100); // Aumentar el timeout para asegurar que todo esté listo
   }
 
   loadProductos(): void {
@@ -110,6 +189,20 @@ export class ProductosComponent implements OnInit, AfterViewInit {
         this.productos = productos;
         this.calcularEstadisticas();
         this.loading = false;
+        
+        // Asegurar que el paginador se actualice y aplique la paginación
+        setTimeout(() => {
+          if (this.paginator) {
+            this.paginator.pageSize = 5;
+            this.paginator.firstPage();
+            this.dataSource._updateChangeSubscription();
+            console.log('Paginador configurado - Tamaño de página:', this.paginator.pageSize);
+            console.log('Total de elementos:', this.dataSource.data.length);
+            
+            // Verificar el estado de la paginación
+            this.checkPaginationStatus();
+          }
+        }, 0);
         
         if (productos.length === 0) {
           this.snackBar.open('No se encontraron productos. Puedes agregar nuevos productos usando el botón "Nuevo Producto".', 'Cerrar', { 
@@ -134,15 +227,12 @@ export class ProductosComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: any): void {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filterPredicate = (data: ProductoDTO, filter: string) => {
-      const searchTerm = filter.toLowerCase();
-      return data.nombre.toLowerCase().includes(searchTerm) ||
-             data.codigo.toLowerCase().includes(searchTerm) ||
-             (data.categoria ? data.categoria.toLowerCase().includes(searchTerm) : false) ||
-             (data.marca ? data.marca.toLowerCase().includes(searchTerm) : false);
-    };
-    
     this.dataSource.filter = filterValue.trim();
+    
+    // Volver a la primera página cuando se filtra
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
   }
 
   editProducto(producto: ProductoDTO): void {
@@ -177,6 +267,11 @@ export class ProductosComponent implements OnInit, AfterViewInit {
           panelClass: ['success-snackbar']
         });
         this.calcularEstadisticas();
+        
+        // Volver a la primera página después de agregar
+        if (this.paginator) {
+          this.paginator.firstPage();
+        }
       },
       error: (error) => {
         console.error('Error creando producto:', error);
@@ -225,6 +320,11 @@ export class ProductosComponent implements OnInit, AfterViewInit {
             panelClass: ['success-snackbar']
           });
           this.calcularEstadisticas();
+          
+          // Volver a la primera página después de eliminar
+          if (this.paginator) {
+            this.paginator.firstPage();
+          }
         },
         error: (error) => {
           console.error('Error eliminando producto:', error);

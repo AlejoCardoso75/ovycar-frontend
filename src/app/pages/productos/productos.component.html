@@ -146,7 +146,15 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
 
-      <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Seleccionar página de productos"></mat-paginator>
+      <mat-paginator 
+        #paginator
+        [pageSizeOptions]="[5, 10, 25, 50, 100]" 
+        [pageSize]="5"
+        [length]="dataSource.data.length"
+        showFirstLastButtons
+        (page)="onPageChange($event)"
+        aria-label="Seleccionar página de productos">
+      </mat-paginator>
     </div>
 
     <!-- Vista Tarjetas -->

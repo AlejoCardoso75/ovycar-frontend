@@ -13,12 +13,15 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductoService } from '../../services/producto.service';
 import { Producto, ProductoDTO } from '../../models/producto.model';
 import { ReportesService } from '../../services/reportes.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { ProductoDialogComponent } from './producto-dialog.component';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-productos',
@@ -38,6 +41,7 @@ import { MatMenuModule } from '@angular/material/menu';
     MatChipsModule,
     MatTooltipModule,
     MatSelectModule,
+    MatProgressSpinnerModule,
     FormsModule,
     ReactiveFormsModule,
     MatMenuModule,
@@ -47,19 +51,17 @@ import { MatMenuModule } from '@angular/material/menu';
   styleUrls: ['./productos.component.scss']
 })
 export class ProductosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'codigo', 'precioVenta', 'stock', 'stockMinimo', 'categoria', 'marca', 'acciones'];
+  displayedColumns: string[] = ['codigo', 'nombre', 'marca', 'stock', 'precioVenta', 'categoria', 'acciones'];
   dataSource = new MatTableDataSource<ProductoDTO>([]);
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatTable) table!: MatTable<ProductoDTO>;
 
-  productoForm!: FormGroup;
-  isEditing = false;
-  selectedProducto: ProductoDTO | null = null;
-  searchTerm = '';
-  showDialog = false;
-  categorias = ['Aceites', 'Filtros', 'Frenos', 'Suspensión', 'Motor', 'Transmisión', 'Eléctrico', 'Carrocería', 'Otros'];
+  // Propiedades para el template
+  viewMode: 'table' | 'cards' = 'table';
+  productos: ProductoDTO[] = [];
+  loading = false;
 
   // Estadísticas
   totalProductos = 0;
@@ -71,44 +73,54 @@ export class ProductosComponent implements OnInit, AfterViewInit {
     private productoService: ProductoService,
     private reportesService: ReportesService,
     private snackBar: MatSnackBar,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private dialog: MatDialog
   ) {
-    this.initForm();
+    console.log('ProductosComponent constructor llamado');
   }
 
   ngOnInit(): void {
+    console.log('ProductosComponent ngOnInit llamado');
     this.loadProductos();
   }
 
   ngAfterViewInit(): void {
+    console.log('ProductosComponent ngAfterViewInit llamado');
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
 
-  initForm(): void {
-    this.productoForm = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(2)]],
-      descripcion: [''],
-      codigo: ['', [Validators.required, Validators.minLength(3)]],
-      precioCompra: ['', [Validators.required, Validators.min(0)]],
-      precioVenta: ['', [Validators.required, Validators.min(0)]],
-      stock: ['', [Validators.required, Validators.min(0)]],
-      stockMinimo: ['', [Validators.required, Validators.min(0)]],
-      categoria: ['', [Validators.required]],
-      marca: [''],
-      activo: [true]
-    });
-  }
-
   loadProductos(): void {
-    this.productoService.getAllProductos().subscribe({
+    console.log('Iniciando carga de productos...');
+    this.loading = true;
+    
+    this.productoService.getAllProductos().pipe(
+      catchError(error => {
+        console.error('Error cargando productos:', error);
+        this.snackBar.open('Error al cargar los productos. Verifica que el backend esté ejecutándose.', 'Cerrar', { 
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return of([]);
+      })
+    ).subscribe({
       next: (productos) => {
+        console.log('Productos recibidos en componente:', productos);
         this.dataSource.data = productos;
+        this.productos = productos;
         this.calcularEstadisticas();
+        this.loading = false;
+        
+        if (productos.length === 0) {
+          this.snackBar.open('No se encontraron productos. Puedes agregar nuevos productos usando el botón "Nuevo Producto".', 'Cerrar', { 
+            duration: 4000,
+            panelClass: ['info-snackbar']
+          });
+        }
       },
       error: (error) => {
-        console.error('Error cargando productos:', error);
-        this.snackBar.open('Error al cargar los productos', 'Cerrar', { duration: 3000 });
+        console.error('Error en la suscripción:', error);
+        this.loading = false;
       }
     });
   }
@@ -120,7 +132,8 @@ export class ProductosComponent implements OnInit, AfterViewInit {
     this.productosBajoStock = this.dataSource.data.filter(p => p.stock < p.stockMinimo).length;
   }
 
-  applyFilter(): void {
+  applyFilter(event: any): void {
+    const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filterPredicate = (data: ProductoDTO, filter: string) => {
       const searchTerm = filter.toLowerCase();
       return data.nombre.toLowerCase().includes(searchTerm) ||
@@ -129,69 +142,75 @@ export class ProductosComponent implements OnInit, AfterViewInit {
              (data.marca ? data.marca.toLowerCase().includes(searchTerm) : false);
     };
     
-    this.dataSource.filter = this.searchTerm.trim();
+    this.dataSource.filter = filterValue.trim();
+  }
+
+  editProducto(producto: ProductoDTO): void {
+    this.openDialog(producto);
   }
 
   openDialog(producto?: ProductoDTO): void {
-    this.isEditing = !!producto;
-    this.selectedProducto = producto || null;
-    this.showDialog = true;
-    
-    if (producto) {
-      this.productoForm.patchValue({
-        nombre: producto.nombre,
-        descripcion: producto.descripcion || '',
-        codigo: producto.codigo,
-        precioCompra: producto.precioCompra,
-        precioVenta: producto.precioVenta,
-        stock: producto.stock,
-        stockMinimo: producto.stockMinimo,
-        categoria: producto.categoria,
-        marca: producto.marca || '',
-        activo: producto.activo
-      });
-    } else {
-      this.productoForm.reset({ activo: true });
-    }
+    const dialogRef = this.dialog.open(ProductoDialogComponent, {
+      width: '600px',
+      data: { producto: producto }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (producto) {
+          this.updateProducto(producto.id, result);
+        } else {
+          this.createProducto(result);
+        }
+      }
+    });
   }
 
-  saveProducto(): void {
-    if (this.productoForm.valid) {
-      const productoData: Producto = this.productoForm.value;
-      
-      if (this.isEditing && this.selectedProducto) {
-        this.productoService.updateProducto(this.selectedProducto.id, productoData).subscribe({
-          next: (updatedProducto) => {
-            const index = this.dataSource.data.findIndex(p => p.id === updatedProducto.id);
-            if (index !== -1) {
-              this.dataSource.data[index] = updatedProducto;
-              this.dataSource._updateChangeSubscription();
-            }
-            this.snackBar.open('Producto actualizado exitosamente', 'Cerrar', { duration: 3000 });
-            this.closeDialog();
-            this.calcularEstadisticas(); // Recalculate stats after update
-          },
-          error: (error) => {
-            console.error('Error actualizando producto:', error);
-            this.snackBar.open('Error al actualizar el producto', 'Cerrar', { duration: 3000 });
-          }
+  createProducto(productoData: Producto): void {
+    this.productoService.createProducto(productoData).subscribe({
+      next: (newProducto) => {
+        this.dataSource.data.push(newProducto);
+        this.dataSource._updateChangeSubscription();
+        this.productos = [...this.dataSource.data];
+        this.snackBar.open('Producto creado exitosamente', 'Cerrar', { 
+          duration: 3000,
+          panelClass: ['success-snackbar']
         });
-      } else {
-        this.productoService.createProducto(productoData).subscribe({
-          next: (newProducto) => {
-            this.dataSource.data.push(newProducto);
-            this.dataSource._updateChangeSubscription();
-            this.snackBar.open('Producto creado exitosamente', 'Cerrar', { duration: 3000 });
-            this.closeDialog();
-            this.calcularEstadisticas(); // Recalculate stats after create
-          },
-          error: (error) => {
-            console.error('Error creando producto:', error);
-            this.snackBar.open('Error al crear el producto', 'Cerrar', { duration: 3000 });
-          }
+        this.calcularEstadisticas();
+      },
+      error: (error) => {
+        console.error('Error creando producto:', error);
+        this.snackBar.open('Error al crear el producto. Verifica los datos e intenta nuevamente.', 'Cerrar', { 
+          duration: 5000,
+          panelClass: ['error-snackbar']
         });
       }
-    }
+    });
+  }
+
+  updateProducto(id: number, productoData: Producto): void {
+    this.productoService.updateProducto(id, productoData).subscribe({
+      next: (updatedProducto) => {
+        const index = this.dataSource.data.findIndex(p => p.id === updatedProducto.id);
+        if (index !== -1) {
+          this.dataSource.data[index] = updatedProducto;
+          this.dataSource._updateChangeSubscription();
+          this.productos = [...this.dataSource.data];
+        }
+        this.snackBar.open('Producto actualizado exitosamente', 'Cerrar', { 
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+        this.calcularEstadisticas();
+      },
+      error: (error) => {
+        console.error('Error actualizando producto:', error);
+        this.snackBar.open('Error al actualizar el producto. Verifica los datos e intenta nuevamente.', 'Cerrar', { 
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   deleteProducto(producto: ProductoDTO): void {
@@ -200,41 +219,27 @@ export class ProductosComponent implements OnInit, AfterViewInit {
         next: () => {
           this.dataSource.data = this.dataSource.data.filter(p => p.id !== producto.id);
           this.dataSource._updateChangeSubscription();
-          this.snackBar.open('Producto eliminado exitosamente', 'Cerrar', { duration: 3000 });
-          this.calcularEstadisticas(); // Recalculate stats after delete
+          this.productos = [...this.dataSource.data];
+          this.snackBar.open('Producto eliminado exitosamente', 'Cerrar', { 
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          this.calcularEstadisticas();
         },
         error: (error) => {
           console.error('Error eliminando producto:', error);
-          this.snackBar.open('Error al eliminar el producto', 'Cerrar', { duration: 3000 });
+          this.snackBar.open('Error al eliminar el producto', 'Cerrar', { 
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
         }
       });
     }
   }
 
-  closeDialog(): void {
-    this.isEditing = false;
-    this.selectedProducto = null;
-    this.showDialog = false;
-    this.productoForm.reset({ activo: true });
-  }
-
-  getErrorMessage(field: string): string {
-    const control = this.productoForm.get(field);
-    if (control?.hasError('required')) {
-      return 'Este campo es requerido';
-    }
-    if (control?.hasError('minlength')) {
-      return `Mínimo ${control.errors?.['minlength'].requiredLength} caracteres`;
-    }
-    if (control?.hasError('min')) {
-      return 'El valor debe ser mayor o igual a 0';
-    }
-    return '';
-  }
-
-  getStockStatus(stock: number, stockMinimo: number): string {
+  getStockStatus(stock: number, stockMinimo?: number): string {
     if (stock === 0) return 'sin-stock';
-    if (stock <= stockMinimo) return 'stock-bajo';
+    if (stockMinimo && stock <= stockMinimo) return 'stock-bajo';
     return 'stock-ok';
   }
 

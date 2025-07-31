@@ -1,4 +1,5 @@
 <div class="productos-container">
+
   <!-- Dashboard -->
   <div class="dashboard">
     <div class="stat-card">
@@ -47,7 +48,6 @@
         Nuevo Producto
       </button>
       
-      <!-- Botones de reportes -->
       <button mat-raised-button color="accent" (click)="descargarInventarioPdf()">
         <mat-icon>picture_as_pdf</mat-icon>
         Descargar PDF
@@ -76,8 +76,25 @@
 
   <!-- Contenido -->
   <div class="content">
+    <!-- Indicador de carga -->
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Cargando productos...</p>
+    </div>
+
+    <!-- Mensaje cuando no hay productos -->
+    <div *ngIf="!loading && productos.length === 0" class="empty-state">
+      <mat-icon class="empty-icon">inventory_2</mat-icon>
+      <h3>No hay productos</h3>
+      <p>Comienza agregando tu primer producto usando el botón "Nuevo Producto"</p>
+      <button mat-raised-button color="primary" (click)="openDialog()">
+        <mat-icon>add</mat-icon>
+        Agregar Primer Producto
+      </button>
+    </div>
+
     <!-- Vista Tabla -->
-    <div *ngIf="viewMode === 'table'" class="table-view">
+    <div *ngIf="!loading && viewMode === 'table' && productos.length > 0" class="table-view">
       <table mat-table [dataSource]="dataSource" matSort>
         <ng-container matColumnDef="codigo">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Código</th>
@@ -91,21 +108,26 @@
 
         <ng-container matColumnDef="marca">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Marca</th>
-          <td mat-cell *matCellDef="let producto">{{ producto.marca }}</td>
+          <td mat-cell *matCellDef="let producto">{{ producto.marca || '-' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="stock">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Stock</th>
           <td mat-cell *matCellDef="let producto">
-            <span class="stock-badge" [class]="getStockStatus(producto.stock)">
+            <span class="stock-badge" [class]="getStockStatus(producto.stock, producto.stockMinimo)">
               {{ producto.stock }}
             </span>
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="precio">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Precio</th>
-          <td mat-cell *matCellDef="let producto">${{ producto.precio | number:'1.0-0' }}</td>
+        <ng-container matColumnDef="precioVenta">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Precio unidad</th>
+          <td mat-cell *matCellDef="let producto">${{ producto.precioVenta | number:'1.0-0' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="categoria">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoría</th>
+          <td mat-cell *matCellDef="let producto">{{ producto.categoria || '-' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="acciones">
@@ -114,7 +136,7 @@
             <button mat-icon-button color="primary" (click)="editProducto(producto)" matTooltip="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="deleteProducto(producto.id)" matTooltip="Eliminar">
+            <button mat-icon-button color="warn" (click)="deleteProducto(producto)" matTooltip="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </td>
@@ -128,12 +150,12 @@
     </div>
 
     <!-- Vista Tarjetas -->
-    <div *ngIf="viewMode === 'cards'" class="cards-view">
+    <div *ngIf="!loading && viewMode === 'cards' && productos.length > 0" class="cards-view">
       <div class="cards-grid">
         <mat-card *ngFor="let producto of productos" class="producto-card">
           <mat-card-header>
             <mat-card-title>{{ producto.nombre }}</mat-card-title>
-            <mat-card-subtitle>{{ producto.marca }}</mat-card-subtitle>
+            <mat-card-subtitle>{{ producto.marca || 'Sin marca' }}</mat-card-subtitle>
           </mat-card-header>
           
           <mat-card-content>
@@ -144,13 +166,17 @@
               </div>
               <div class="detail-item">
                 <span class="label">Stock:</span>
-                <span class="value stock-badge" [class]="getStockStatus(producto.stock)">
+                <span class="value stock-badge" [class]="getStockStatus(producto.stock, producto.stockMinimo)">
                   {{ producto.stock }}
                 </span>
               </div>
               <div class="detail-item">
                 <span class="label">Precio:</span>
-                <span class="value price">${{ producto.precio | number:'1.0-0' }}</span>
+                <span class="value price">${{ producto.precioVenta | number:'1.0-0' }}</span>
+              </div>
+              <div class="detail-item" *ngIf="producto.categoria">
+                <span class="label">Categoría:</span>
+                <span class="value">{{ producto.categoria }}</span>
               </div>
             </div>
           </mat-card-content>
@@ -160,7 +186,7 @@
               <mat-icon>edit</mat-icon>
               Editar
             </button>
-            <button mat-button color="warn" (click)="deleteProducto(producto.id)">
+            <button mat-button color="warn" (click)="deleteProducto(producto)">
               <mat-icon>delete</mat-icon>
               Eliminar
             </button>
@@ -169,50 +195,4 @@
       </div>
     </div>
   </div>
-</div>
-
-<!-- Dialog para crear/editar producto -->
-<div class="dialog-container">
-  <h2 mat-dialog-title>{{ isEditing ? 'Editar' : 'Nuevo' }} Producto</h2>
-  <form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
-    <mat-dialog-content>
-      <div class="form-row">
-        <mat-form-field appearance="outline">
-          <mat-label>Código</mat-label>
-          <input matInput formControlName="codigo" placeholder="Código del producto">
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Nombre</mat-label>
-          <input matInput formControlName="nombre" placeholder="Nombre del producto">
-        </mat-form-field>
-      </div>
-      
-      <div class="form-row">
-        <mat-form-field appearance="outline">
-          <mat-label>Marca</mat-label>
-          <input matInput formControlName="marca" placeholder="Marca del producto">
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Stock</mat-label>
-          <input matInput type="number" formControlName="stock" placeholder="Cantidad en stock">
-        </mat-form-field>
-      </div>
-      
-      <div class="form-row">
-        <mat-form-field appearance="outline">
-          <mat-label>Precio</mat-label>
-          <input matInput type="number" formControlName="precio" placeholder="Precio unitario">
-        </mat-form-field>
-      </div>
-    </mat-dialog-content>
-    
-    <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="closeDialog()">Cancelar</button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="!productoForm.valid">
-        {{ isEditing ? 'Actualizar' : 'Crear' }}
-      </button>
-    </mat-dialog-actions>
-  </form>
 </div> 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Producto, ProductoDTO } from '../models/producto.model';
 
@@ -10,10 +10,19 @@ import { Producto, ProductoDTO } from '../models/producto.model';
 export class ProductoService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { 
+    console.log('ProductoService inicializado con API URL:', this.apiUrl);
+  }
 
   getAllProductos(): Observable<ProductoDTO[]> {
-    return this.http.get<ProductoDTO[]>(`${this.apiUrl}/productos`);
+    console.log('Solicitando productos desde:', `${this.apiUrl}/productos`);
+    return this.http.get<ProductoDTO[]>(`${this.apiUrl}/productos`).pipe(
+      tap(productos => console.log('Productos recibidos:', productos)),
+      catchError(error => {
+        console.error('Error en getAllProductos:', error);
+        throw error;
+      })
+    );
   }
 
   getProductoById(id: number): Observable<ProductoDTO> {

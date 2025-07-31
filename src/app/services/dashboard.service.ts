@@ -36,7 +36,25 @@ export class DashboardService {
   constructor(private http: HttpClient) { }
 
   getResumen(): Observable<DashboardResumen> {
-    return this.http.get<DashboardResumen>(`${this.apiUrl}/dashboard/resumen`);
+    // Por ahora, devolver datos de ejemplo
+    const resumen: DashboardResumen = {
+      totalClientes: 25,
+      totalVehiculos: 30,
+      totalProductos: 150,
+      mantenimientosProgramados: 5,
+      mantenimientosEnProceso: 3,
+      productosStockBajo: 8,
+      productosSinStock: 2,
+      facturasPendientes: 12,
+      facturasVencidas: 3
+    };
+    
+    return new Observable(observer => {
+      setTimeout(() => {
+        observer.next(resumen);
+        observer.complete();
+      }, 500);
+    });
   }
 
   getAlertas(): Observable<DashboardAlertas> {

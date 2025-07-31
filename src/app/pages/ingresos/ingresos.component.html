@@ -1,0 +1,148 @@
+<div class="ingresos-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>📊 Gestión de Ingresos</h1>
+    <p>Monitoreo y análisis de ingresos del taller</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Período</mat-label>
+      <mat-select [(ngModel)]="periodoSeleccionado" (selectionChange)="cambiarPeriodo()">
+        <mat-option value="semanal">Semanal</mat-option>
+        <mat-option value="mensual">Mensual</mat-option>
+        <mat-option value="trimestral">Trimestral</mat-option>
+        <mat-option value="anual">Anual</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha Inicio</mat-label>
+      <input matInput [matDatepicker]="startPicker" [(ngModel)]="fechaInicio">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha Fin</mat-label>
+      <input matInput [matDatepicker]="endPicker" [(ngModel)]="fechaFin">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="aplicarFiltros()">
+      <mat-icon>filter_list</mat-icon>
+      Aplicar Filtros
+    </button>
+  </div>
+
+  <!-- Dashboard de Ingresos -->
+  <div class="dashboard">
+    <mat-card class="stat-card total">
+      <mat-card-content>
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">${{ resumen.total | number:'1.0-0' }}</div>
+          <div class="stat-label">Total Ingresos</div>
+          <div class="stat-change" [class.positive]="resumen.crecimiento > 0" [class.negative]="resumen.crecimiento < 0">
+            {{ resumen.crecimiento > 0 ? '+' : '' }}{{ resumen.crecimiento }}% vs período anterior
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card ventas">
+      <mat-card-content>
+        <div class="stat-icon">🛒</div>
+        <div class="stat-content">
+          <div class="stat-value">${{ resumen.ventas | number:'1.0-0' }}</div>
+          <div class="stat-label">Ventas</div>
+          <div class="stat-percentage">{{ (resumen.ventas / resumen.total * 100) | number:'1.0-1' }}%</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card servicios">
+      <mat-card-content>
+        <div class="stat-icon">🔧</div>
+        <div class="stat-content">
+          <div class="stat-value">${{ resumen.servicios | number:'1.0-0' }}</div>
+          <div class="stat-label">Servicios</div>
+          <div class="stat-percentage">{{ (resumen.servicios / resumen.total * 100) | number:'1.0-1' }}%</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card mantenimientos">
+      <mat-card-content>
+        <div class="stat-icon">🚗</div>
+        <div class="stat-content">
+          <div class="stat-value">${{ resumen.mantenimientos | number:'1.0-0' }}</div>
+          <div class="stat-label">Mantenimientos</div>
+          <div class="stat-percentage">{{ (resumen.mantenimientos / resumen.total * 100) | number:'1.0-1' }}%</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Tabla de Ingresos -->
+  <mat-card class="table-card">
+    <mat-card-header>
+      <mat-card-title>📋 Detalle de Ingresos</mat-card-title>
+      <mat-card-subtitle>{{ ingresosFiltrados.length }} registros encontrados</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <table mat-table [dataSource]="dataSource" matSort>
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+          <td mat-cell *matCellDef="let ingreso">{{ ingreso.fecha | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="concepto">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Concepto</th>
+          <td mat-cell *matCellDef="let ingreso">{{ ingreso.concepto }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="tipo">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+          <td mat-cell *matCellDef="let ingreso">
+            <mat-chip [class]="'chip-' + ingreso.tipo">
+              {{ ingreso.tipo | titlecase }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="monto">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Monto</th>
+          <td mat-cell *matCellDef="let ingreso">${{ ingreso.monto | number:'1.0-0' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="cliente">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+          <td mat-cell *matCellDef="let ingreso">{{ ingreso.cliente || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+          <td mat-cell *matCellDef="let ingreso">
+            <mat-chip [class]="'chip-' + ingreso.estado">
+              {{ ingreso.estado | titlecase }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator 
+        [pageSizeOptions]="[10, 25, 50, 100]" 
+        [pageSize]="10"
+        showFirstLastButtons
+        aria-label="Seleccionar página de ingresos">
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div> 

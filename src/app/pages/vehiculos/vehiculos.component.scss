@@ -1,0 +1,163 @@
+.vehiculos-container {
+  padding: 20px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.search-section {
+  flex: 1;
+  max-width: 400px;
+}
+
+.actions-section {
+  display: flex;
+  gap: 10px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.vehiculos-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+.mat-mdc-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Diálogo modal */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.dialog-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dialog-card .mat-mdc-card-header {
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+  margin: -16px -16px 16px -16px;
+  padding: 16px;
+}
+
+.dialog-card .mat-mdc-card-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.dialog-card .mat-mdc-card-content {
+  padding: 16px;
+}
+
+/* Formulario */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row:last-of-type {
+  grid-template-columns: 1fr;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .vehiculos-container {
+    padding: 16px;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .search-section {
+    max-width: none;
+  }
+  
+  .actions-section {
+    justify-content: center;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .dialog-container {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .vehiculos-table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vehiculos-container {
+    padding: 12px;
+  }
+  
+  .vehiculos-table {
+    min-width: 500px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+} 

@@ -1,0 +1,197 @@
+<div class="dashboard-container">
+  <h1 class="dashboard-title">Dashboard</h1>
+  
+  <!-- Botón de refrescar -->
+  <div style="text-align: right; margin-bottom: 20px;">
+    <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon>
+      Refrescar
+    </button>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="loading" style="text-align: center; padding: 40px;">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Cargando datos del dashboard...</p>
+  </div>
+
+  <!-- Estado de error -->
+  <div *ngIf="error && !loading" style="text-align: center; padding: 40px;">
+    <mat-icon style="font-size: 48px; color: #f44336;">error</mat-icon>
+    <h3>Error al cargar los datos</h3>
+    <p>No se pudieron cargar los datos del dashboard. Verifica que el backend esté funcionando.</p>
+    <button mat-raised-button color="primary" (click)="refreshData()">
+      <mat-icon>refresh</mat-icon>
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Contenido del dashboard -->
+  <div *ngIf="!loading && !error">
+    <!-- Estadísticas generales -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-content">
+          <mat-icon class="stat-icon">people</mat-icon>
+          <div class="stat-info">
+            <h3>{{ stats.totalClientes }}</h3>
+            <p>Total Clientes</p>
+          </div>
+        </div>
+        <button mat-button color="primary" (click)="navigateTo('/clientes')">
+          Ver clientes <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-content">
+          <mat-icon class="stat-icon">directions_car</mat-icon>
+          <div class="stat-info">
+            <h3>{{ stats.totalVehiculos }}</h3>
+            <p>Total Vehículos</p>
+          </div>
+        </div>
+        <button mat-button color="primary" (click)="navigateTo('/vehiculos')">
+          Ver vehículos <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-content">
+          <mat-icon class="stat-icon">inventory</mat-icon>
+          <div class="stat-info">
+            <h3>{{ stats.totalProductos }}</h3>
+            <p>Total Productos</p>
+          </div>
+        </div>
+        <button mat-button color="primary" (click)="navigateTo('/productos')">
+          Ver productos <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-content">
+          <mat-icon class="stat-icon">build</mat-icon>
+          <div class="stat-info">
+            <h3>{{ stats.mantenimientosProgramados + stats.mantenimientosEnProceso }}</h3>
+            <p>Mantenimientos</p>
+          </div>
+        </div>
+        <button mat-button color="primary" (click)="navigateTo('/mantenimientos')">
+          Ver mantenimientos <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alerts-section">
+      <div class="alerts-grid">
+        <!-- Productos con stock bajo -->
+        <mat-card class="alert-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>warning</mat-icon>
+              Productos con Stock Bajo
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="alertas.productosStockBajo.length === 0" style="text-align: center; padding: 20px; color: #666;">
+              <mat-icon style="font-size: 48px; color: #4caf50;">check_circle</mat-icon>
+              <p>No hay productos con stock bajo</p>
+            </div>
+            <div *ngFor="let producto of alertas.productosStockBajo" class="producto-item">
+              <div>
+                <div class="producto-nombre">{{ producto.nombre }}</div>
+                <div class="stock-cantidad">Stock: {{ producto.stock }} / {{ producto.stockMinimo }}</div>
+              </div>
+              <div class="stock-info">
+                <mat-chip [color]="getStockColor(producto.stock, producto.stockMinimo)" selected>
+                  {{ getStockPercentage(producto.stock, producto.stockMinimo) | number:'1.0-0' }}%
+                </mat-chip>
+                <mat-progress-bar 
+                  [value]="getStockPercentage(producto.stock, producto.stockMinimo)"
+                  [color]="getStockColor(producto.stock, producto.stockMinimo)">
+                </mat-progress-bar>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Productos sin stock -->
+        <mat-card class="alert-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>error</mat-icon>
+              Productos Sin Stock
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="alertas.productosSinStock.length === 0" style="text-align: center; padding: 20px; color: #666;">
+              <mat-icon style="font-size: 48px; color: #4caf50;">check_circle</mat-icon>
+              <p>No hay productos sin stock</p>
+            </div>
+            <div *ngFor="let producto of alertas.productosSinStock" class="producto-item">
+              <div>
+                <div class="producto-nombre">{{ producto.nombre }}</div>
+                <div class="stock-cantidad">Stock: {{ producto.stock }} / {{ producto.stockMinimo }}</div>
+              </div>
+              <div class="stock-info">
+                <mat-chip color="warn" selected>Sin stock</mat-chip>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Facturas vencidas -->
+        <mat-card class="alert-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>payment</mat-icon>
+              Facturas Vencidas
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="alertas.facturasVencidas.length === 0" style="text-align: center; padding: 20px; color: #666;">
+              <mat-icon style="font-size: 48px; color: #4caf50;">check_circle</mat-icon>
+              <p>No hay facturas vencidas</p>
+            </div>
+            <div *ngFor="let factura of alertas.facturasVencidas" class="factura-item">
+              <div class="factura-info">
+                <div class="cliente-nombre">{{ factura.cliente?.nombre }} {{ factura.cliente?.apellido }}</div>
+                <div class="factura-monto">${{ factura.total | number:'1.0-0' }}</div>
+              </div>
+              <div>
+                <mat-chip color="warn" selected>{{ factura.diasVencida }} días vencida</mat-chip>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Mantenimientos programados -->
+        <mat-card class="alert-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>schedule</mat-icon>
+              Mantenimientos Programados
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="alertas.mantenimientosProgramados.length === 0" style="text-align: center; padding: 20px; color: #666;">
+              <mat-icon style="font-size: 48px; color: #4caf50;">check_circle</mat-icon>
+              <p>No hay mantenimientos programados</p>
+            </div>
+            <div *ngFor="let mantenimiento of alertas.mantenimientosProgramados" class="mantenimiento-item">
+              <div class="mantenimiento-info">
+                <div class="vehiculo-placa">{{ mantenimiento.vehiculo?.placa }}</div>
+                <div class="mantenimiento-desc">{{ mantenimiento.descripcion }}</div>
+              </div>
+              <div>
+                <mat-chip color="primary" selected>{{ mantenimiento.fecha | date:'shortDate' }}</mat-chip>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div> 

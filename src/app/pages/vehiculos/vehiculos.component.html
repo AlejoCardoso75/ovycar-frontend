@@ -1,0 +1,241 @@
+<div class="vehiculos-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>directions_car</mat-icon>
+        Gestión de Vehículos
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Barra de herramientas -->
+      <div class="toolbar">
+        <div class="search-section">
+          <mat-form-field appearance="outline">
+            <mat-label>Buscar vehículos</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Placa, marca, modelo, cliente o color">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+        
+        <div class="actions-section">
+          <button mat-raised-button color="primary" (click)="openDialog()">
+            <mat-icon>add</mat-icon>
+            Nuevo Vehículo
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de vehículos -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="vehiculos-table">
+          
+          <!-- Columna ID -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.id }} </td>
+          </ng-container>
+
+          <!-- Columna Cliente -->
+          <ng-container matColumnDef="cliente">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Cliente </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.clienteNombre }} </td>
+          </ng-container>
+
+          <!-- Columna Placa -->
+          <ng-container matColumnDef="placa">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Placa </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.placa }} </td>
+          </ng-container>
+
+          <!-- Columna Marca -->
+          <ng-container matColumnDef="marca">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Marca </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.marca }} </td>
+          </ng-container>
+
+          <!-- Columna Modelo -->
+          <ng-container matColumnDef="modelo">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Modelo </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.modelo }} </td>
+          </ng-container>
+
+          <!-- Columna Año -->
+          <ng-container matColumnDef="año">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Año </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.anio || '-' }} </td>
+          </ng-container>
+
+          <!-- Columna Color -->
+          <ng-container matColumnDef="color">
+            <th mat-header-cell *matHeaderCellDef> Color </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.color || '-' }} </td>
+          </ng-container>
+
+          <!-- Columna Kilometraje -->
+          <ng-container matColumnDef="kilometraje">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Kilometraje </th>
+            <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.kilometraje || '-' }} km </td>
+          </ng-container>
+
+          <!-- Columna Estado -->
+          <ng-container matColumnDef="activo">
+            <th mat-header-cell *matHeaderCellDef> Estado </th>
+            <td mat-cell *matCellDef="let vehiculo">
+              <mat-chip [color]="vehiculo.activo ? 'primary' : 'warn'" selected>
+                {{ vehiculo.activo ? 'Activo' : 'Inactivo' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Columna Acciones -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef> Acciones </th>
+            <td mat-cell *matCellDef="let vehiculo">
+              <button mat-icon-button color="primary" (click)="openDialog(vehiculo)" matTooltip="Editar">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteVehiculo(vehiculo)" matTooltip="Eliminar">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator 
+          [pageSizeOptions]="[5, 10, 25, 50]" 
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Diálogo para crear/editar vehículo -->
+  <div class="dialog-overlay" *ngIf="showDialog" (click)="closeDialog()"></div>
+  
+  <div class="dialog-container" *ngIf="showDialog">
+    <mat-card class="dialog-card">
+      <mat-card-header>
+        <mat-card-title>
+          {{ isEditing ? 'Editar Vehículo' : 'Nuevo Vehículo' }}
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="vehiculoForm" (ngSubmit)="saveVehiculo()">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Cliente *</mat-label>
+              <mat-select formControlName="clienteId">
+                <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
+                  {{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.documento }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="vehiculoForm.get('clienteId')?.hasError('required')">
+                {{ getErrorMessage('clienteId') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Placa *</mat-label>
+              <input matInput formControlName="placa" placeholder="Ingrese la placa">
+              <mat-error *ngIf="vehiculoForm.get('placa')?.hasError('required')">
+                {{ getErrorMessage('placa') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('placa')?.hasError('minlength')">
+                {{ getErrorMessage('placa') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('placa')?.hasError('maxlength')">
+                {{ getErrorMessage('placa') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Marca *</mat-label>
+              <input matInput formControlName="marca" placeholder="Ingrese la marca">
+              <mat-error *ngIf="vehiculoForm.get('marca')?.hasError('required')">
+                {{ getErrorMessage('marca') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('marca')?.hasError('minlength')">
+                {{ getErrorMessage('marca') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Modelo *</mat-label>
+              <input matInput formControlName="modelo" placeholder="Ingrese el modelo">
+              <mat-error *ngIf="vehiculoForm.get('modelo')?.hasError('required')">
+                {{ getErrorMessage('modelo') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('modelo')?.hasError('minlength')">
+                {{ getErrorMessage('modelo') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Año *</mat-label>
+              <input matInput formControlName="anio" placeholder="YYYY" type="number">
+              <mat-error *ngIf="vehiculoForm.get('anio')?.hasError('required')">
+                {{ getErrorMessage('anio') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('anio')?.hasError('pattern')">
+                {{ getErrorMessage('anio') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Color *</mat-label>
+              <input matInput formControlName="color" placeholder="Ingrese el color">
+              <mat-error *ngIf="vehiculoForm.get('color')?.hasError('required')">
+                {{ getErrorMessage('color') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('color')?.hasError('minlength')">
+                {{ getErrorMessage('color') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Número VIN</mat-label>
+              <input matInput formControlName="numeroVin" placeholder="17 caracteres">
+              <mat-error *ngIf="vehiculoForm.get('numeroVin')?.hasError('minlength')">
+                {{ getErrorMessage('numeroVin') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('numeroVin')?.hasError('maxlength')">
+                {{ getErrorMessage('numeroVin') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Kilometraje *</mat-label>
+              <input matInput formControlName="kilometraje" placeholder="Ingrese el kilometraje" type="number">
+              <mat-error *ngIf="vehiculoForm.get('kilometraje')?.hasError('required')">
+                {{ getErrorMessage('kilometraje') }}
+              </mat-error>
+              <mat-error *ngIf="vehiculoForm.get('kilometraje')?.hasError('min')">
+                {{ getErrorMessage('kilometraje') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" mat-button (click)="closeDialog()">Cancelar</button>
+            <button type="submit" mat-raised-button color="primary" [disabled]="vehiculoForm.invalid">
+              {{ isEditing ? 'Actualizar' : 'Crear' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div> 

@@ -1,0 +1,189 @@
+<div class="clientes-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>people</mat-icon>
+        Gestión de Clientes
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Barra de herramientas -->
+      <div class="toolbar">
+        <div class="search-section">
+          <mat-form-field appearance="outline">
+            <mat-label>Buscar clientes</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Nombre, apellido, documento o email">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+        
+        <div class="actions-section">
+          <button mat-raised-button color="primary" (click)="openDialog()">
+            <mat-icon>add</mat-icon>
+            Nuevo Cliente
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de clientes -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="clientes-table">
+          
+          <!-- Columna ID -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.id }} </td>
+          </ng-container>
+
+          <!-- Columna Nombre -->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.nombre }} </td>
+          </ng-container>
+
+          <!-- Columna Apellido -->
+          <ng-container matColumnDef="apellido">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Apellido </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.apellido }} </td>
+          </ng-container>
+
+          <!-- Columna Documento -->
+          <ng-container matColumnDef="documento">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Documento </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.documento }} </td>
+          </ng-container>
+
+          <!-- Columna Teléfono -->
+          <ng-container matColumnDef="telefono">
+            <th mat-header-cell *matHeaderCellDef> Teléfono </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.telefono || '-' }} </td>
+          </ng-container>
+
+          <!-- Columna Email -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef> Email </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.email || '-' }} </td>
+          </ng-container>
+
+          <!-- Columna Estado -->
+          <ng-container matColumnDef="activo">
+            <th mat-header-cell *matHeaderCellDef> Estado </th>
+            <td mat-cell *matCellDef="let cliente">
+              <mat-chip [color]="cliente.activo ? 'primary' : 'warn'" selected>
+                {{ cliente.activo ? 'Activo' : 'Inactivo' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Columna Acciones -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef> Acciones </th>
+            <td mat-cell *matCellDef="let cliente">
+              <button mat-icon-button color="primary" (click)="openDialog(cliente)" matTooltip="Editar">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteCliente(cliente)" matTooltip="Eliminar">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator 
+          [pageSizeOptions]="[5, 10, 25, 50]" 
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Diálogo para crear/editar cliente -->
+  <div class="dialog-overlay" *ngIf="showDialog" (click)="closeDialog()"></div>
+  
+  <div class="dialog-container" *ngIf="showDialog">
+    <mat-card class="dialog-card">
+      <mat-card-header>
+        <mat-card-title>
+          {{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="clienteForm" (ngSubmit)="saveCliente()">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre *</mat-label>
+              <input matInput formControlName="nombre" placeholder="Ingrese el nombre">
+              <mat-error *ngIf="clienteForm.get('nombre')?.hasError('required')">
+                {{ getErrorMessage('nombre') }}
+              </mat-error>
+              <mat-error *ngIf="clienteForm.get('nombre')?.hasError('minlength')">
+                {{ getErrorMessage('nombre') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Apellido *</mat-label>
+              <input matInput formControlName="apellido" placeholder="Ingrese el apellido">
+              <mat-error *ngIf="clienteForm.get('apellido')?.hasError('required')">
+                {{ getErrorMessage('apellido') }}
+              </mat-error>
+              <mat-error *ngIf="clienteForm.get('apellido')?.hasError('minlength')">
+                {{ getErrorMessage('apellido') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Documento *</mat-label>
+              <input matInput formControlName="documento" placeholder="Ingrese el documento">
+              <mat-error *ngIf="clienteForm.get('documento')?.hasError('required')">
+                {{ getErrorMessage('documento') }}
+              </mat-error>
+              <mat-error *ngIf="clienteForm.get('documento')?.hasError('minlength')">
+                {{ getErrorMessage('documento') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="telefono" placeholder="Ingrese el teléfono">
+              <mat-error *ngIf="clienteForm.get('telefono')?.hasError('pattern')">
+                {{ getErrorMessage('telefono') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" placeholder="Ingrese el email" type="email">
+              <mat-error *ngIf="clienteForm.get('email')?.hasError('email')">
+                {{ getErrorMessage('email') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Dirección</mat-label>
+              <textarea matInput formControlName="direccion" placeholder="Ingrese la dirección" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" mat-button (click)="closeDialog()">Cancelar</button>
+            <button type="submit" mat-raised-button color="primary" [disabled]="clienteForm.invalid">
+              {{ isEditing ? 'Actualizar' : 'Crear' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div> 

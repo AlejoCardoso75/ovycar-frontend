@@ -1,0 +1,480 @@
+<div class="facturas-container">
+  <!-- Tarjetas de estadísticas -->
+  <div class="stats-grid">
+    <mat-card class="stat-card total">
+      <div class="stat-content">
+        <mat-icon class="stat-icon">receipt_long</mat-icon>
+        <div class="stat-info">
+          <h3>{{ estadisticas.total }}</h3>
+          <p>Total Facturas</p>
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card pendientes">
+      <div class="stat-content">
+        <mat-icon class="stat-icon">pending</mat-icon>
+        <div class="stat-info">
+          <h3>{{ estadisticas.pendientes }}</h3>
+          <p>Pendientes</p>
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card pagadas">
+      <div class="stat-content">
+        <mat-icon class="stat-icon">payment</mat-icon>
+        <div class="stat-info">
+          <h3>{{ estadisticas.pagadas }}</h3>
+          <p>Pagadas</p>
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card vencidas">
+      <div class="stat-content">
+        <mat-icon class="stat-icon">warning</mat-icon>
+        <div class="stat-info">
+          <h3>{{ estadisticas.vencidas }}</h3>
+          <p>Vencidas</p>
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card canceladas">
+      <div class="stat-content">
+        <mat-icon class="stat-icon">cancel</mat-icon>
+        <div class="stat-info">
+          <h3>{{ estadisticas.canceladas }}</h3>
+          <p>Canceladas</p>
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card ingresos">
+      <div class="stat-content">
+        <mat-icon class="stat-icon">account_balance_wallet</mat-icon>
+        <div class="stat-info">
+          <h3>${{ estadisticas.totalIngresos | number:'1.0-0' }}</h3>
+          <p>Total Ingresos</p>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Pestañas por estado -->
+  <mat-card class="main-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>receipt_long</mat-icon>
+        Gestión de Facturas
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Barra de herramientas -->
+      <div class="toolbar">
+        <div class="search-section">
+          <mat-form-field appearance="outline">
+            <mat-label>Buscar facturas</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Número, cliente o estado">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+        
+        <div class="actions-section">
+          <button mat-raised-button color="primary" (click)="openDialog()">
+            <mat-icon>add</mat-icon>
+            Nueva Factura
+          </button>
+        </div>
+      </div>
+
+      <!-- Pestañas -->
+      <mat-tab-group>
+        <mat-tab label="Todas ({{ estadisticas.total }})">
+          <div class="tab-content">
+            <div class="table-container">
+              <table mat-table [dataSource]="dataSource" matSort class="facturas-table">
+                
+                <!-- Columna Número de Factura -->
+                <ng-container matColumnDef="numeroFactura">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header> Número </th>
+                  <td mat-cell *matCellDef="let factura"> {{ factura.numeroFactura }} </td>
+                </ng-container>
+
+                <!-- Columna Cliente -->
+                <ng-container matColumnDef="cliente">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header> Cliente </th>
+                  <td mat-cell *matCellDef="let factura"> {{ factura.clienteNombre }} </td>
+                </ng-container>
+
+                <!-- Columna Fecha de Emisión -->
+                <ng-container matColumnDef="fechaEmision">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Emisión </th>
+                  <td mat-cell *matCellDef="let factura"> {{ factura.fechaEmision | date:'shortDate' }} </td>
+                </ng-container>
+
+                <!-- Columna Total -->
+                <ng-container matColumnDef="total">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header> Total </th>
+                  <td mat-cell *matCellDef="let factura"> ${{ factura.total | number:'1.0-0' }} </td>
+                </ng-container>
+
+                <!-- Columna Estado -->
+                <ng-container matColumnDef="estado">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header> Estado </th>
+                  <td mat-cell *matCellDef="let factura">
+                    <mat-chip [color]="getEstadoColor(factura.estado)" selected>
+                      {{ factura.estado }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- Columna Acciones -->
+                <ng-container matColumnDef="acciones">
+                  <th mat-header-cell *matHeaderCellDef> Acciones </th>
+                  <td mat-cell *matCellDef="let factura">
+                    <div class="action-buttons">
+                      <button mat-icon-button color="primary" (click)="openDialog(factura)" matTooltip="Editar">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      
+                      <button mat-icon-button color="accent" (click)="descargarPdf(factura)" matTooltip="Descargar PDF">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                      
+                      <button mat-icon-button color="primary" 
+                              (click)="marcarComoPagada(factura)" 
+                              [disabled]="!canPagar(factura.estado)"
+                              matTooltip="Marcar como Pagada">
+                        <mat-icon>payment</mat-icon>
+                      </button>
+                      
+                      <button mat-icon-button color="warn" 
+                              (click)="cancelarFactura(factura)" 
+                              [disabled]="!canCancelar(factura.estado)"
+                              matTooltip="Cancelar Factura">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                      
+                      <button mat-icon-button color="warn" (click)="deleteFactura(factura)" matTooltip="Eliminar">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+
+              <mat-paginator 
+                [pageSizeOptions]="[5, 10, 25, 50]" 
+                showFirstLastButtons>
+              </mat-paginator>
+            </div>
+          </div>
+        </mat-tab>
+
+        <mat-tab label="Pendientes ({{ estadisticas.pendientes }})">
+          <div class="tab-content">
+            <div class="facturas-grid">
+              <mat-card *ngFor="let factura of facturasPendientes" class="factura-card pendiente">
+                <mat-card-header>
+                  <mat-card-title>{{ factura.numeroFactura }}</mat-card-title>
+                  <mat-card-subtitle>{{ factura.clienteNombre }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <p><strong>Fecha:</strong> {{ factura.fechaEmision | date:'shortDate' }}</p>
+                  <p><strong>Total:</strong> ${{ factura.total | number:'1.0-0' }}</p>
+                  <p *ngIf="factura.fechaVencimiento"><strong>Vence:</strong> {{ factura.fechaVencimiento | date:'shortDate' }}</p>
+                </mat-card-content>
+                <mat-card-actions>
+                  <button mat-button color="primary" (click)="marcarComoPagada(factura)">
+                    <mat-icon>payment</mat-icon> Pagar
+                  </button>
+                  <button mat-button color="primary" (click)="openDialog(factura)">
+                    <mat-icon>edit</mat-icon> Editar
+                  </button>
+                  <button mat-button color="accent" (click)="descargarPdf(factura)">
+                    <mat-icon>picture_as_pdf</mat-icon> PDF
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          </div>
+        </mat-tab>
+
+        <mat-tab label="Pagadas ({{ estadisticas.pagadas }})">
+          <div class="tab-content">
+            <div class="facturas-grid">
+              <mat-card *ngFor="let factura of facturasPagadas" class="factura-card pagada">
+                <mat-card-header>
+                  <mat-card-title>{{ factura.numeroFactura }}</mat-card-title>
+                  <mat-card-subtitle>{{ factura.clienteNombre }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <p><strong>Fecha:</strong> {{ factura.fechaEmision | date:'shortDate' }}</p>
+                  <p><strong>Total:</strong> ${{ factura.total | number:'1.0-0' }}</p>
+                  <p *ngIf="factura.observaciones"><strong>Observaciones:</strong> {{ factura.observaciones }}</p>
+                </mat-card-content>
+                <mat-card-actions>
+                  <button mat-button color="primary" (click)="openDialog(factura)">
+                    <mat-icon>visibility</mat-icon> Ver Detalles
+                  </button>
+                  <button mat-button color="accent" (click)="descargarPdf(factura)">
+                    <mat-icon>picture_as_pdf</mat-icon> PDF
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          </div>
+        </mat-tab>
+
+        <mat-tab label="Vencidas ({{ estadisticas.vencidas }})">
+          <div class="tab-content">
+            <div class="facturas-grid">
+              <mat-card *ngFor="let factura of facturasVencidas" class="factura-card vencida">
+                <mat-card-header>
+                  <mat-card-title>{{ factura.numeroFactura }}</mat-card-title>
+                  <mat-card-subtitle>{{ factura.clienteNombre }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <p><strong>Fecha:</strong> {{ factura.fechaEmision | date:'shortDate' }}</p>
+                  <p><strong>Total:</strong> ${{ factura.total | number:'1.0-0' }}</p>
+                  <p><strong>Vencida desde:</strong> {{ factura.fechaVencimiento | date:'shortDate' }}</p>
+                </mat-card-content>
+                <mat-card-actions>
+                  <button mat-button color="primary" (click)="marcarComoPagada(factura)">
+                    <mat-icon>payment</mat-icon> Pagar
+                  </button>
+                  <button mat-button color="warn" (click)="cancelarFactura(factura)">
+                    <mat-icon>cancel</mat-icon> Cancelar
+                  </button>
+                  <button mat-button color="accent" (click)="descargarPdf(factura)">
+                    <mat-icon>picture_as_pdf</mat-icon> PDF
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Diálogo para crear/editar factura -->
+  <div class="dialog-overlay" *ngIf="showDialog" (click)="closeDialog()"></div>
+  
+  <div class="dialog-container" *ngIf="showDialog">
+    <mat-card class="dialog-card">
+      <mat-card-header>
+        <mat-card-title>
+          {{ isEditing ? 'Editar Factura' : 'Nueva Factura' }}
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="facturaForm" (ngSubmit)="saveFactura()">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Cliente *</mat-label>
+              <mat-select formControlName="clienteId">
+                <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
+                  {{ cliente.nombre }} {{ cliente.apellido }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="facturaForm.get('clienteId')?.hasError('required')">
+                {{ getErrorMessage('clienteId') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Mantenimiento (Opcional)</mat-label>
+              <mat-select formControlName="mantenimientoId">
+                <mat-option [value]="">Sin mantenimiento asociado</mat-option>
+                <mat-option *ngFor="let mantenimiento of mantenimientos" [value]="mantenimiento.id">
+                  {{ mantenimiento.tipoMantenimiento }} - {{ mantenimiento.vehiculoPlaca }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha de Emisión *</mat-label>
+              <input matInput [matDatepicker]="pickerEmision" formControlName="fechaEmision">
+              <mat-datepicker-toggle matSuffix [for]="pickerEmision"></mat-datepicker-toggle>
+              <mat-datepicker #pickerEmision></mat-datepicker>
+              <mat-error *ngIf="facturaForm.get('fechaEmision')?.hasError('required')">
+                {{ getErrorMessage('fechaEmision') }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha de Vencimiento</mat-label>
+              <input matInput [matDatepicker]="pickerVencimiento" formControlName="fechaVencimiento">
+              <mat-datepicker-toggle matSuffix [for]="pickerVencimiento"></mat-datepicker-toggle>
+              <mat-datepicker #pickerVencimiento></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Estado *</mat-label>
+              <mat-select formControlName="estado">
+                <mat-option *ngFor="let estado of estados" [value]="estado">
+                  {{ estado }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="facturaForm.get('estado')?.hasError('required')">
+                {{ getErrorMessage('estado') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Sección de Detalles -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>list</mat-icon>
+                Detalles de la Factura
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div formArrayName="detalles">
+              <div *ngFor="let detalle of detallesArray.controls; let i = index" [formGroupName]="i" class="detalle-item">
+                <mat-divider *ngIf="i > 0"></mat-divider>
+                
+                <div class="detalle-header">
+                  <h4>Detalle {{ i + 1 }}</h4>
+                  <button type="button" mat-icon-button color="warn" (click)="removeDetalle(i)" matTooltip="Eliminar detalle">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Tipo de Item *</mat-label>
+                    <mat-select formControlName="tipoItem" (selectionChange)="onTipoItemChange(i)">
+                      <mat-option *ngFor="let tipo of tiposItem" [value]="tipo">
+                        {{ tipo }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="detalle.get('tipoItem')?.hasError('required')">
+                      Este campo es requerido
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" *ngIf="detalle.get('tipoItem')?.value === 'SERVICIO'">
+                    <mat-label>Servicio</mat-label>
+                    <mat-select formControlName="servicioId" (selectionChange)="onServicioChange(i)">
+                      <mat-option *ngFor="let servicio of servicios" [value]="servicio.id">
+                        {{ servicio.nombre }} - ${{ servicio.precio }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" *ngIf="detalle.get('tipoItem')?.value === 'PRODUCTO'">
+                    <mat-label>Producto</mat-label>
+                    <mat-select formControlName="productoId" (selectionChange)="onProductoChange(i)">
+                      <mat-option *ngFor="let producto of productos" [value]="producto.id">
+                        {{ producto.nombre }} - ${{ producto.precioVenta }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Cantidad *</mat-label>
+                    <input matInput formControlName="cantidad" type="number" min="1" (input)="calcularSubtotalDetalle(i)">
+                    <mat-error *ngIf="detalle.get('cantidad')?.hasError('required')">
+                      Este campo es requerido
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Precio Unitario *</mat-label>
+                    <input matInput formControlName="precioUnitario" type="number" min="0" (input)="calcularSubtotalDetalle(i)">
+                    <mat-error *ngIf="detalle.get('precioUnitario')?.hasError('required')">
+                      Este campo es requerido
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Subtotal</mat-label>
+                    <input matInput formControlName="subtotal" readonly>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Descripción</mat-label>
+                    <textarea matInput formControlName="descripcion" rows="2"></textarea>
+                  </mat-form-field>
+                </div>
+              </div>
+
+              <div class="add-detalle-section">
+                <button type="button" mat-stroked-button color="primary" (click)="addDetalle()">
+                  <mat-icon>add</mat-icon>
+                  Agregar Detalle
+                </button>
+              </div>
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Totales -->
+          <div class="totales-section">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Subtotal</mat-label>
+                <input matInput formControlName="subtotal" readonly>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Impuestos</mat-label>
+                <input matInput formControlName="impuestos" type="number" min="0" (input)="calcularTotales()">
+                <mat-error *ngIf="facturaForm.get('impuestos')?.hasError('min')">
+                  {{ getErrorMessage('impuestos') }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Descuento</mat-label>
+                <input matInput formControlName="descuento" type="number" min="0" (input)="calcularTotales()">
+                <mat-error *ngIf="facturaForm.get('descuento')?.hasError('min')">
+                  {{ getErrorMessage('descuento') }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Total *</mat-label>
+                <input matInput formControlName="total" readonly>
+                <mat-error *ngIf="facturaForm.get('total')?.hasError('required')">
+                  {{ getErrorMessage('total') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Observaciones</mat-label>
+              <textarea matInput formControlName="observaciones" placeholder="Observaciones adicionales" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" mat-button (click)="closeDialog()">Cancelar</button>
+            <button type="submit" mat-raised-button color="primary" [disabled]="facturaForm.invalid">
+              {{ isEditing ? 'Actualizar' : 'Crear' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div> 

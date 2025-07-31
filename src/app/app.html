@@ -1,0 +1,87 @@
+<mat-sidenav-container class="sidenav-container">
+  <!-- Sidebar -->
+  <mat-sidenav #drawer class="sidenav" fixedInViewport
+      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+      [mode]="(isHandset$ | async) ? 'over' : 'side'"
+      [opened]="(isHandset$ | async) === false">
+    
+    <mat-toolbar>Menú</mat-toolbar>
+    
+    <mat-nav-list>
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      
+      <a mat-list-item routerLink="/clientes" routerLinkActive="active">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>Clientes</span>
+      </a>
+      
+      <a mat-list-item routerLink="/vehiculos" routerLinkActive="active">
+        <mat-icon matListItemIcon>directions_car</mat-icon>
+        <span matListItemTitle>Vehículos</span>
+      </a>
+      
+      <a mat-list-item routerLink="/productos" routerLinkActive="active">
+        <mat-icon matListItemIcon>inventory</mat-icon>
+        <span matListItemTitle>Productos</span>
+      </a>
+      
+      <a mat-list-item routerLink="/mantenimientos" routerLinkActive="active">
+        <mat-icon matListItemIcon>build</mat-icon>
+        <span matListItemTitle>Mantenimientos</span>
+      </a>
+      
+      <a mat-list-item routerLink="/facturas" routerLinkActive="active">
+        <mat-icon matListItemIcon>receipt</mat-icon>
+        <span matListItemTitle>Facturas</span>
+      </a>
+      
+      <a mat-list-item routerLink="/servicios" routerLinkActive="active">
+        <mat-icon matListItemIcon>miscellaneous_services</mat-icon>
+        <span matListItemTitle>Servicios</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+  
+  <!-- Main content -->
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        (click)="drawer.toggle()"
+        *ngIf="isHandset$ | async">
+        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+      </button>
+      
+      <span class="app-title">OvyCar - Sistema de Gestión</span>
+      
+      <span class="spacer"></span>
+      
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item>
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>settings</mat-icon>
+          <span>Configuración</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Cerrar Sesión</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+    
+  <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

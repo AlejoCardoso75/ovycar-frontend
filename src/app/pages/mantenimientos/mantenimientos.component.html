@@ -271,16 +271,24 @@
         <form [formGroup]="mantenimientoForm" (ngSubmit)="saveMantenimiento()">
           <div class="form-row">
             <mat-form-field appearance="outline">
-              <mat-label>Vehículo *</mat-label>
-              <mat-select formControlName="vehiculoId">
-                <mat-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.id">
+              <mat-label>Buscar Vehículo *</mat-label>
+              <input matInput 
+                     formControlName="vehiculoSearch" 
+                     placeholder="Buscar por placa, marca, modelo o cliente"
+                     [matAutocomplete]="auto">
+              <mat-autocomplete #auto="matAutocomplete" 
+                               (optionSelected)="onVehiculoSelected($event.option.value)"
+                               [displayWith]="displayVehiculoFn">
+                <mat-option *ngFor="let vehiculo of filteredVehiculos | async" [value]="vehiculo.id">
                   {{ vehiculo.placa }} - {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.clienteNombre }})
                 </mat-option>
-              </mat-select>
-              <mat-error *ngIf="mantenimientoForm.get('vehiculoId')?.hasError('required')">
-                {{ getErrorMessage('vehiculoId') }}
+              </mat-autocomplete>
+              <mat-error *ngIf="mantenimientoForm.get('vehiculoSearch')?.hasError('required')">
+                Debe seleccionar un vehículo
               </mat-error>
             </mat-form-field>
+            <!-- Campo oculto para el ID del vehículo -->
+            <input type="hidden" formControlName="vehiculoId">
 
             <mat-form-field appearance="outline">
               <mat-label>Tipo de Mantenimiento *</mat-label>
@@ -337,15 +345,7 @@
             </mat-form-field>
           </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Kilometraje Próximo</mat-label>
-              <input matInput formControlName="kilometrajeProximo" placeholder="0" type="number" min="0">
-              <mat-error *ngIf="mantenimientoForm.get('kilometrajeProximo')?.hasError('min')">
-                {{ getErrorMessage('kilometrajeProximo') }}
-              </mat-error>
-            </mat-form-field>
-          </div>
+
 
           <div class="form-row">
             <mat-form-field appearance="outline">

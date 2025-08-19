@@ -38,16 +38,7 @@ import { Producto, ProductoDTO } from '../../models/producto.model';
         <form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
           <mat-dialog-content class="dialog-content">
             <div class="form-grid">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Código</mat-label>
-                <input matInput formControlName="codigo" placeholder="Código del producto">
-                <mat-error *ngIf="productoForm.get('codigo')?.hasError('required')">
-                  El código es requerido
-                </mat-error>
-                <mat-error *ngIf="productoForm.get('codigo')?.hasError('minlength')">
-                  Mínimo 3 caracteres
-                </mat-error>
-              </mat-form-field>
+
               
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Nombre</mat-label>
@@ -82,22 +73,13 @@ import { Producto, ProductoDTO } from '../../models/producto.model';
                 </mat-error>
               </mat-form-field>
               
-              <mat-form-field appearance="outline">
-                <mat-label>Precio de Compra</mat-label>
-                <input matInput type="number" formControlName="precioCompra" placeholder="Precio de compra">
-                <mat-error *ngIf="productoForm.get('precioCompra')?.hasError('required')">
-                  El precio de compra es requerido
-                </mat-error>
-                <mat-error *ngIf="productoForm.get('precioCompra')?.hasError('min')">
-                  El precio debe ser mayor a 0
-                </mat-error>
-              </mat-form-field>
+
               
               <mat-form-field appearance="outline">
-                <mat-label>Precio de Venta</mat-label>
-                <input matInput type="number" formControlName="precioVenta" placeholder="Precio de venta">
+                <mat-label>Precio</mat-label>
+                <input matInput type="number" formControlName="precioVenta" placeholder="Precio del producto">
                 <mat-error *ngIf="productoForm.get('precioVenta')?.hasError('required')">
-                  El precio de venta es requerido
+                  El precio es requerido
                 </mat-error>
                 <mat-error *ngIf="productoForm.get('precioVenta')?.hasError('min')">
                   El precio debe ser mayor a 0
@@ -112,17 +94,6 @@ import { Producto, ProductoDTO } from '../../models/producto.model';
                 </mat-error>
                 <mat-error *ngIf="productoForm.get('stock')?.hasError('min')">
                   El stock debe ser mayor o igual a 0
-                </mat-error>
-              </mat-form-field>
-              
-              <mat-form-field appearance="outline">
-                <mat-label>Stock Mínimo</mat-label>
-                <input matInput type="number" formControlName="stockMinimo" placeholder="Stock mínimo">
-                <mat-error *ngIf="productoForm.get('stockMinimo')?.hasError('required')">
-                  El stock mínimo es requerido
-                </mat-error>
-                <mat-error *ngIf="productoForm.get('stockMinimo')?.hasError('min')">
-                  El stock mínimo debe ser mayor o igual a 0
                 </mat-error>
               </mat-form-field>
             </div>
@@ -326,7 +297,17 @@ export class ProductoDialogComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     if (this.isEditing && this.data.producto) {
-      this.productoForm.patchValue(this.data.producto);
+      // Solo mostrar los campos que están en el formulario
+      const producto = this.data.producto;
+      this.productoForm.patchValue({
+        nombre: producto.nombre,
+        descripcion: producto.descripcion,
+        precioVenta: producto.precioVenta,
+        stock: producto.stock,
+        categoria: producto.categoria,
+        marca: producto.marca,
+        activo: producto.activo
+      });
     }
   }
 
@@ -334,11 +315,8 @@ export class ProductoDialogComponent implements OnInit {
     this.productoForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       descripcion: [''],
-      codigo: ['', [Validators.required, Validators.minLength(3)]],
-      precioCompra: ['', [Validators.required, Validators.min(0)]],
       precioVenta: ['', [Validators.required, Validators.min(0)]],
       stock: ['', [Validators.required, Validators.min(0)]],
-      stockMinimo: ['', [Validators.required, Validators.min(0)]],
       categoria: ['', [Validators.required]],
       marca: [''],
       activo: [true]
@@ -347,9 +325,49 @@ export class ProductoDialogComponent implements OnInit {
 
   onSubmit(): void {
     if (this.productoForm.valid) {
-      const productoData: Producto = this.productoForm.value;
+      const formValue = this.productoForm.value;
+      
+      let codigo: string;
+      let precioCompra: number;
+      
+      if (this.isEditing && this.data.producto) {
+        // Mantener el código existente al editar
+        codigo = this.data.producto.codigo;
+        precioCompra = this.data.producto.precioCompra;
+      } else {
+        // Generar código automáticamente para nuevos productos
+        codigo = this.generateCodigo(formValue.nombre);
+        // Establecer precio de compra como 80% del precio de venta
+        precioCompra = formValue.precioVenta * 0.8;
+      }
+      
+      const productoData: Producto = {
+        ...formValue,
+        codigo: codigo,
+        precioCompra: precioCompra
+      };
+      
       this.dialogRef.close(productoData);
     }
+  }
+
+  private generateCodigo(nombre: string): string {
+    // Generar código basado en las primeras letras del nombre
+    const palabras = nombre.split(' ').filter(p => p.length > 0);
+    let codigo = '';
+    
+    if (palabras.length >= 2) {
+      codigo = palabras[0].substring(0, 2).toUpperCase() + 
+               palabras[1].substring(0, 2).toUpperCase();
+    } else if (palabras.length === 1) {
+      codigo = palabras[0].substring(0, 4).toUpperCase();
+    } else {
+      codigo = 'PROD';
+    }
+    
+    // Agregar timestamp para hacerlo único
+    const timestamp = Date.now().toString().slice(-4);
+    return `${codigo}${timestamp}`;
   }
 
   onCancel(): void {

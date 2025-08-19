@@ -16,13 +16,19 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import { MantenimientoService } from '../../services/mantenimiento.service';
 import { ClienteService } from '../../services/cliente.service';
 import { VehiculoService } from '../../services/vehiculo.service';
+import { ConfirmationModalService } from '../../services/confirmation-modal.service';
 import { Mantenimiento, MantenimientoDTO, EstadoMantenimiento } from '../../models/mantenimiento.model';
 import { ClienteDTO } from '../../models/cliente.model';
 import { VehiculoDTO } from '../../models/vehiculo.model';
+import { DeleteInfo, FacturaInfo } from '../../models/delete-info.model';
 
 @Component({
   selector: 'app-mantenimientos',
@@ -45,6 +51,8 @@ import { VehiculoDTO } from '../../models/vehiculo.model';
     MatDatepickerModule,
     MatNativeDateModule,
     MatTabsModule,
+    MatDialogModule,
+    MatAutocompleteModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -65,6 +73,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   searchTerm = '';
   showDialog = false;
   vehiculos: VehiculoDTO[] = [];
+  filteredVehiculos!: Observable<VehiculoDTO[]>;
+  selectedVehiculo: VehiculoDTO | null = null;
   estados = Object.values(EstadoMantenimiento);
   tiposMantenimiento = [
     'Cambio de Aceite',
@@ -98,6 +108,7 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   constructor(
     private mantenimientoService: MantenimientoService,
     private vehiculoService: VehiculoService,
+    private confirmationModalService: ConfirmationModalService,
     private snackBar: MatSnackBar,
     private fb: FormBuilder
   ) {
@@ -116,13 +127,13 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
 
   initForm(): void {
     this.mantenimientoForm = this.fb.group({
+      vehiculoSearch: ['', [Validators.required]],
       vehiculoId: ['', [Validators.required]],
       tipoMantenimiento: ['', [Validators.required]],
       descripcion: [''],
       fechaProgramada: ['', [Validators.required]],
       estado: [EstadoMantenimiento.PROGRAMADO, [Validators.required]],
       kilometrajeActual: ['', [Validators.min(0)]],
-      kilometrajeProximo: ['', [Validators.min(0)]],
       observaciones: [''],
       costo: ['', [Validators.min(0)]]
     });
@@ -146,11 +157,51 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     this.vehiculoService.getAllVehiculos().subscribe({
       next: (vehiculos) => {
         this.vehiculos = vehiculos;
+        this.setupVehiculoFilter();
       },
       error: (error) => {
         console.error('Error cargando vehículos:', error);
       }
     });
+  }
+
+  setupVehiculoFilter(): void {
+    this.filteredVehiculos = this.mantenimientoForm.get('vehiculoSearch')!.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterVehiculos(value))
+    );
+  }
+
+  private _filterVehiculos(value: string): VehiculoDTO[] {
+    const filterValue = value.toLowerCase();
+    return this.vehiculos.filter(vehiculo => 
+      vehiculo.placa.toLowerCase().includes(filterValue) ||
+      vehiculo.marca.toLowerCase().includes(filterValue) ||
+      vehiculo.modelo.toLowerCase().includes(filterValue) ||
+      vehiculo.clienteNombre.toLowerCase().includes(filterValue)
+    );
+  }
+
+  onVehiculoSelected(vehiculoId: number): void {
+    const vehiculo = this.vehiculos.find(v => v.id === vehiculoId);
+    if (vehiculo) {
+      this.selectedVehiculo = vehiculo;
+      this.mantenimientoForm.patchValue({
+        vehiculoId: vehiculo.id,
+        vehiculoSearch: `${vehiculo.placa} - ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.clienteNombre})`
+      });
+    }
+  }
+
+  displayVehiculoFn = (vehiculoId: number | string): string => {
+    if (typeof vehiculoId === 'string') {
+      return vehiculoId;
+    }
+    if (typeof vehiculoId === 'number') {
+      const vehiculo = this.vehiculos.find(v => v.id === vehiculoId);
+      return vehiculo ? `${vehiculo.placa} - ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.clienteNombre})` : '';
+    }
+    return '';
   }
 
   categorizarMantenimientos(mantenimientos: MantenimientoDTO[]): void {
@@ -220,18 +271,23 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     this.showDialog = true;
     
     if (mantenimiento) {
+      // Buscar el vehículo para mostrar en el campo de búsqueda
+      const vehiculo = this.vehiculos.find(v => v.id === mantenimiento.vehiculoId);
+      this.selectedVehiculo = vehiculo || null;
+      
       this.mantenimientoForm.patchValue({
         vehiculoId: mantenimiento.vehiculoId,
+        vehiculoSearch: vehiculo ? `${vehiculo.placa} - ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.clienteNombre})` : '',
         tipoMantenimiento: mantenimiento.tipoMantenimiento,
         descripcion: mantenimiento.descripcion || '',
         fechaProgramada: mantenimiento.fechaProgramada,
         estado: mantenimiento.estado,
         kilometrajeActual: mantenimiento.kilometrajeActual,
-        kilometrajeProximo: mantenimiento.kilometrajeProximo,
         observaciones: mantenimiento.observaciones || '',
         costo: mantenimiento.costo
       });
     } else {
+      this.selectedVehiculo = null;
       this.mantenimientoForm.reset({ 
         estado: EstadoMantenimiento.PROGRAMADO,
         fechaProgramada: new Date().toISOString().split('T')[0]
@@ -253,7 +309,6 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           fechaProgramada: mantenimientoData.fechaProgramada,
           estado: mantenimientoData.estado,
           kilometrajeActual: mantenimientoData.kilometrajeActual,
-          kilometrajeProximo: mantenimientoData.kilometrajeProximo,
           observaciones: mantenimientoData.observaciones,
           costo: mantenimientoData.costo
         };
@@ -278,7 +333,6 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           fechaProgramada: mantenimientoData.fechaProgramada,
           estado: mantenimientoData.estado,
           kilometrajeActual: mantenimientoData.kilometrajeActual,
-          kilometrajeProximo: mantenimientoData.kilometrajeProximo,
           observaciones: mantenimientoData.observaciones,
           costo: mantenimientoData.costo
         };
@@ -299,18 +353,71 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   }
 
   deleteMantenimiento(mantenimiento: MantenimientoDTO): void {
-    if (confirm(`¿Está seguro de eliminar el mantenimiento ${mantenimiento.tipoMantenimiento}?`)) {
-      this.mantenimientoService.deleteMantenimiento(mantenimiento.id).subscribe({
-        next: () => {
-          this.snackBar.open('Mantenimiento eliminado exitosamente', 'Cerrar', { duration: 3000 });
-          this.loadMantenimientos();
-        },
-        error: (error) => {
-          console.error('Error eliminando mantenimiento:', error);
-          this.snackBar.open('Error al eliminar el mantenimiento', 'Cerrar', { duration: 3000 });
+    // Obtener información detallada sobre la eliminación
+    this.mantenimientoService.getDeleteInfo(mantenimiento.id).subscribe({
+      next: (deleteInfo: DeleteInfo) => {
+        if (deleteInfo.canDelete) {
+          // Si se puede eliminar, mostrar modal de confirmación simple
+          this.confirmationModalService.confirmDelete(
+            mantenimiento.tipoMantenimiento, 
+            'mantenimiento'
+          ).subscribe(confirmed => {
+            if (confirmed) {
+              this.performDelete(mantenimiento.id);
+            }
+          });
+        } else {
+          // Si no se puede eliminar, mostrar modal con opciones de cascada
+          this.showDeleteOptionsWithModal(mantenimiento, deleteInfo);
         }
-      });
-    }
+      },
+      error: (error) => {
+        console.error('Error obteniendo información de eliminación:', error);
+        this.snackBar.open('Error al verificar el mantenimiento', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  private performDelete(mantenimientoId: number): void {
+    this.mantenimientoService.deleteMantenimiento(mantenimientoId).subscribe({
+      next: () => {
+        this.snackBar.open('Mantenimiento eliminado exitosamente', 'Cerrar', { duration: 3000 });
+        this.loadMantenimientos();
+      },
+      error: (error) => {
+        console.error('Error eliminando mantenimiento:', error);
+        this.snackBar.open('Error al eliminar el mantenimiento', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  private showDeleteOptionsWithModal(mantenimiento: MantenimientoDTO, deleteInfo: DeleteInfo): void {
+    // Mostrar modal con información detallada sobre las facturas asociadas
+    this.confirmationModalService.confirmDeleteWithFacturas(
+      mantenimiento.tipoMantenimiento,
+      deleteInfo.facturas || []
+    ).subscribe(confirmed => {
+      if (confirmed) {
+        this.performDeleteWithCascade(mantenimiento.id);
+      }
+    });
+  }
+
+  private performDeleteWithCascade(mantenimientoId: number): void {
+    this.mantenimientoService.deleteMantenimientoWithCascade(mantenimientoId).subscribe({
+      next: () => {
+        this.snackBar.open('Mantenimiento y facturas eliminados exitosamente', 'Cerrar', { duration: 3000 });
+        this.loadMantenimientos();
+      },
+      error: (error) => {
+        console.error('Error eliminando mantenimiento con cascada:', error);
+        let errorMessage = 'Error al eliminar el mantenimiento';
+        if (error.error && error.error.error) {
+          errorMessage = error.error.error;
+        }
+        this.snackBar.open(errorMessage, 'Cerrar', { duration: 5000 });
+      }
+    });
   }
 
   iniciarMantenimiento(mantenimiento: MantenimientoDTO): void {
@@ -340,23 +447,32 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   }
 
   cancelarMantenimiento(mantenimiento: MantenimientoDTO): void {
-    if (confirm(`¿Está seguro de cancelar el mantenimiento ${mantenimiento.tipoMantenimiento}?`)) {
-      this.mantenimientoService.cancelarMantenimiento(mantenimiento.id).subscribe({
-        next: (updatedMantenimiento) => {
-          this.snackBar.open('Mantenimiento cancelado exitosamente', 'Cerrar', { duration: 3000 });
-          this.loadMantenimientos();
-        },
-        error: (error) => {
-          console.error('Error cancelando mantenimiento:', error);
-          this.snackBar.open('Error al cancelar el mantenimiento', 'Cerrar', { duration: 3000 });
-        }
-      });
-    }
+    this.confirmationModalService.confirm({
+      title: 'Confirmar cancelación',
+      message: `¿Está seguro de cancelar el mantenimiento "${mantenimiento.tipoMantenimiento}"?`,
+      confirmText: 'Cancelar mantenimiento',
+      cancelText: 'No cancelar',
+      type: 'warning'
+    }).subscribe(confirmed => {
+      if (confirmed) {
+        this.mantenimientoService.cancelarMantenimiento(mantenimiento.id).subscribe({
+          next: (updatedMantenimiento) => {
+            this.snackBar.open('Mantenimiento cancelado exitosamente', 'Cerrar', { duration: 3000 });
+            this.loadMantenimientos();
+          },
+          error: (error) => {
+            console.error('Error cancelando mantenimiento:', error);
+            this.snackBar.open('Error al cancelar el mantenimiento', 'Cerrar', { duration: 3000 });
+          }
+        });
+      }
+    });
   }
 
   closeDialog(): void {
     this.isEditing = false;
     this.selectedMantenimiento = null;
+    this.selectedVehiculo = null;
     this.showDialog = false;
     this.mantenimientoForm.reset({ 
       estado: EstadoMantenimiento.PROGRAMADO,

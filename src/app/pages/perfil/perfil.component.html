@@ -1,0 +1,64 @@
+<div class="perfil-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>👤 Datos del Usuario</h1>
+    <p>Información personal del usuario del sistema</p>
+  </div>
+
+  <!-- Información Personal -->
+  <mat-card class="info-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>person</mat-icon>
+        Información Personal
+      </mat-card-title>
+      <mat-card-subtitle>Datos básicos del usuario</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="user-info">
+        <div class="info-row">
+          <div class="info-label">Nombre:</div>
+          <div class="info-value">{{ userData.nombre }} {{ userData.apellido }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Email:</div>
+          <div class="info-value">{{ userData.email }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Teléfono:</div>
+          <div class="info-value">{{ userData.telefono }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Cargo:</div>
+          <div class="info-value">{{ userData.cargo }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Departamento:</div>
+          <div class="info-value">{{ userData.departamento }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Rol:</div>
+          <div class="info-value">{{ userData.rol }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Fecha de Registro:</div>
+          <div class="info-value">{{ userData.fechaRegistro | date:'dd/MM/yyyy' }}</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label">Último Acceso:</div>
+          <div class="info-value">{{ userData.ultimoAcceso | date:'dd/MM/yyyy HH:mm' }}</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+
+</div> 

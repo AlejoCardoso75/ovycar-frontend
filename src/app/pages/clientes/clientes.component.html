@@ -30,12 +30,6 @@
       <div class="table-container">
         <table mat-table [dataSource]="dataSource" matSort class="clientes-table">
           
-          <!-- Columna ID -->
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
-            <td mat-cell *matCellDef="let cliente"> {{ cliente.id }} </td>
-          </ng-container>
-
           <!-- Columna Nombre -->
           <ng-container matColumnDef="nombre">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>

@@ -225,6 +225,26 @@
   grid-template-columns: 1fr;
 }
 
+/* Estilos para el autocompletado */
+.mat-autocomplete-panel {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.mat-option {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.mat-option:hover {
+  background-color: #f5f5f5;
+}
+
+/* Campo oculto */
+input[type="hidden"] {
+  display: none;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;

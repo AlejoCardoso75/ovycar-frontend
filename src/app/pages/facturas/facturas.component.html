@@ -269,79 +269,76 @@
   
   <div class="dialog-container" *ngIf="showDialog">
     <mat-card class="dialog-card">
-      <mat-card-header>
-        <mat-card-title>
-          {{ isEditing ? 'Editar Factura' : 'Nueva Factura' }}
-        </mat-card-title>
-      </mat-card-header>
+             <mat-card-header>
+         <mat-card-title>
+           {{ isEditing ? 'Editar Factura' : 'Crear Nueva Factura' }}
+         </mat-card-title>
+         <mat-card-subtitle>
+           Agregue los productos, repuestos o servicios realizados
+         </mat-card-subtitle>
+       </mat-card-header>
       
       <mat-card-content>
         <form [formGroup]="facturaForm" (ngSubmit)="saveFactura()">
           <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Cliente *</mat-label>
-              <mat-select formControlName="clienteId">
-                <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
-                  {{ cliente.nombre }} {{ cliente.apellido }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="facturaForm.get('clienteId')?.hasError('required')">
-                {{ getErrorMessage('clienteId') }}
-              </mat-error>
-            </mat-form-field>
+                         <mat-form-field appearance="outline">
+               <mat-label>Buscar Cliente *</mat-label>
+               <input matInput 
+                      formControlName="clienteSearch" 
+                      placeholder="Buscar por nombre, apellido o documento"
+                      [matAutocomplete]="auto">
+               <button matSuffix mat-icon-button type="button" 
+                       *ngIf="selectedCliente" 
+                       (click)="clearClienteSelection()" 
+                       matTooltip="Limpiar selección">
+                 <mat-icon>clear</mat-icon>
+               </button>
+               <mat-autocomplete #auto="matAutocomplete" 
+                                (optionSelected)="onClienteSelected($event.option.value)"
+                                [displayWith]="displayClienteFn">
+                 <mat-option *ngFor="let cliente of filteredClientes | async" [value]="cliente.id">
+                   {{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.documento }}
+                 </mat-option>
+               </mat-autocomplete>
+               <mat-error *ngIf="facturaForm.get('clienteSearch')?.hasError('required')">
+                 Debe seleccionar un cliente
+               </mat-error>
+             </mat-form-field>
+             <!-- Campo oculto para el ID del cliente -->
+             <input type="hidden" formControlName="clienteId">
 
             <mat-form-field appearance="outline">
               <mat-label>Mantenimiento (Opcional)</mat-label>
               <mat-select formControlName="mantenimientoId">
                 <mat-option [value]="">Sin mantenimiento asociado</mat-option>
-                <mat-option *ngFor="let mantenimiento of mantenimientos" [value]="mantenimiento.id">
-                  {{ mantenimiento.tipoMantenimiento }} - {{ mantenimiento.vehiculoPlaca }}
+                <mat-option *ngFor="let mantenimiento of mantenimientosCliente" [value]="mantenimiento.id">
+                  {{ mantenimiento.tipoMantenimiento }} - {{ mantenimiento.vehiculoPlaca }} ({{ mantenimiento.fechaProgramada | date:'shortDate' }})
                 </mat-option>
               </mat-select>
             </mat-form-field>
           </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Fecha de Emisión *</mat-label>
-              <input matInput [matDatepicker]="pickerEmision" formControlName="fechaEmision">
-              <mat-datepicker-toggle matSuffix [for]="pickerEmision"></mat-datepicker-toggle>
-              <mat-datepicker #pickerEmision></mat-datepicker>
-              <mat-error *ngIf="facturaForm.get('fechaEmision')?.hasError('required')">
-                {{ getErrorMessage('fechaEmision') }}
-              </mat-error>
-            </mat-form-field>
+                     <div class="form-row">
+             <mat-form-field appearance="outline">
+               <mat-label>Fecha de Emisión *</mat-label>
+               <input matInput formControlName="fechaEmision" readonly>
+               <mat-error *ngIf="facturaForm.get('fechaEmision')?.hasError('required')">
+                 {{ getErrorMessage('fechaEmision') }}
+               </mat-error>
+             </mat-form-field>
+           </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Fecha de Vencimiento</mat-label>
-              <input matInput [matDatepicker]="pickerVencimiento" formControlName="fechaVencimiento">
-              <mat-datepicker-toggle matSuffix [for]="pickerVencimiento"></mat-datepicker-toggle>
-              <mat-datepicker #pickerVencimiento></mat-datepicker>
-            </mat-form-field>
-          </div>
+          
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Estado *</mat-label>
-              <mat-select formControlName="estado">
-                <mat-option *ngFor="let estado of estados" [value]="estado">
-                  {{ estado }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="facturaForm.get('estado')?.hasError('required')">
-                {{ getErrorMessage('estado') }}
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <!-- Sección de Detalles -->
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <mat-icon>list</mat-icon>
-                Detalles de la Factura
-              </mat-panel-title>
-            </mat-expansion-panel-header>
+                     <!-- Sección de Detalles -->
+           <div class="detalles-section">
+             <h3>
+               <mat-icon>list</mat-icon>
+               Detalles de la Factura
+             </h3>
+             <p class="detalles-description">
+               Agregue los productos, repuestos o servicios que se realizaron para el cliente
+             </p>
 
             <div formArrayName="detalles">
               <div *ngFor="let detalle of detallesArray.controls; let i = index" [formGroupName]="i" class="detalle-item">
@@ -354,36 +351,35 @@
                   </button>
                 </div>
 
-                <div class="form-row">
-                  <mat-form-field appearance="outline">
-                    <mat-label>Tipo de Item *</mat-label>
-                    <mat-select formControlName="tipoItem" (selectionChange)="onTipoItemChange(i)">
-                      <mat-option *ngFor="let tipo of tiposItem" [value]="tipo">
-                        {{ tipo }}
-                      </mat-option>
-                    </mat-select>
-                    <mat-error *ngIf="detalle.get('tipoItem')?.hasError('required')">
-                      Este campo es requerido
-                    </mat-error>
-                  </mat-form-field>
+                                 <div class="form-row">
+                   <mat-form-field appearance="outline">
+                     <mat-label>Tipo de Item *</mat-label>
+                     <mat-select formControlName="tipoItem" (selectionChange)="onTipoItemChange(i)">
+                       <mat-option value="PRODUCTO">Producto/Repuesto</mat-option>
+                       <mat-option value="SERVICIO">Servicio</mat-option>
+                     </mat-select>
+                     <mat-error *ngIf="detalle.get('tipoItem')?.hasError('required')">
+                       Este campo es requerido
+                     </mat-error>
+                   </mat-form-field>
 
-                  <mat-form-field appearance="outline" *ngIf="detalle.get('tipoItem')?.value === 'SERVICIO'">
-                    <mat-label>Servicio</mat-label>
-                    <mat-select formControlName="servicioId" (selectionChange)="onServicioChange(i)">
-                      <mat-option *ngFor="let servicio of servicios" [value]="servicio.id">
-                        {{ servicio.nombre }} - ${{ servicio.precio }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                                     <mat-form-field appearance="outline" *ngIf="detalle.get('tipoItem')?.value === 'SERVICIO'">
+                     <mat-label>Seleccionar Servicio *</mat-label>
+                     <mat-select formControlName="servicioId" (selectionChange)="onServicioChange(i)">
+                       <mat-option *ngFor="let servicio of servicios" [value]="servicio.id">
+                         {{ servicio.nombre }} - ${{ servicio.precio | number:'1.0-0' }}
+                       </mat-option>
+                     </mat-select>
+                   </mat-form-field>
 
-                  <mat-form-field appearance="outline" *ngIf="detalle.get('tipoItem')?.value === 'PRODUCTO'">
-                    <mat-label>Producto</mat-label>
-                    <mat-select formControlName="productoId" (selectionChange)="onProductoChange(i)">
-                      <mat-option *ngFor="let producto of productos" [value]="producto.id">
-                        {{ producto.nombre }} - ${{ producto.precioVenta }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                   <mat-form-field appearance="outline" *ngIf="detalle.get('tipoItem')?.value === 'PRODUCTO'">
+                     <mat-label>Seleccionar Producto/Repuesto *</mat-label>
+                     <mat-select formControlName="productoId" (selectionChange)="onProductoChange(i)">
+                       <mat-option *ngFor="let producto of productos" [value]="producto.id">
+                         {{ producto.nombre }} - ${{ producto.precioVenta | number:'1.0-0' }}
+                       </mat-option>
+                     </mat-select>
+                   </mat-form-field>
                 </div>
 
                 <div class="form-row">
@@ -417,14 +413,14 @@
                 </div>
               </div>
 
-              <div class="add-detalle-section">
-                <button type="button" mat-stroked-button color="primary" (click)="addDetalle()">
-                  <mat-icon>add</mat-icon>
-                  Agregar Detalle
-                </button>
-              </div>
-            </div>
-          </mat-expansion-panel>
+                             <div class="add-detalle-section">
+                 <button type="button" mat-raised-button color="primary" (click)="addDetalle()">
+                   <mat-icon>add</mat-icon>
+                   Agregar Producto o Servicio
+                 </button>
+               </div>
+             </div>
+           </div>
 
           <!-- Totales -->
           <div class="totales-section">

@@ -102,15 +102,15 @@
             <div *ngFor="let producto of alertas.productosStockBajo" class="producto-item">
               <div>
                 <div class="producto-nombre">{{ producto.nombre }}</div>
-                <div class="stock-cantidad">Stock: {{ producto.stock }} / {{ producto.stockMinimo }}</div>
+                <div class="stock-cantidad">Stock: {{ producto.stock }} / 3</div>
               </div>
               <div class="stock-info">
-                <mat-chip [color]="getStockColor(producto.stock, producto.stockMinimo)" selected>
-                  {{ getStockPercentage(producto.stock, producto.stockMinimo) | number:'1.0-0' }}%
+                <mat-chip [color]="getStockColor(producto.stock)" selected>
+                  {{ getStockPercentage(producto.stock) | number:'1.0-0' }}%
                 </mat-chip>
                 <mat-progress-bar 
-                  [value]="getStockPercentage(producto.stock, producto.stockMinimo)"
-                  [color]="getStockColor(producto.stock, producto.stockMinimo)">
+                  [value]="getStockPercentage(producto.stock)"
+                  [color]="getStockColor(producto.stock)">
                 </mat-progress-bar>
               </div>
             </div>
@@ -133,7 +133,7 @@
             <div *ngFor="let producto of alertas.productosSinStock" class="producto-item">
               <div>
                 <div class="producto-nombre">{{ producto.nombre }}</div>
-                <div class="stock-cantidad">Stock: {{ producto.stock }} / {{ producto.stockMinimo }}</div>
+                <div class="stock-cantidad">Stock: {{ producto.stock }} / 3</div>
               </div>
               <div class="stock-info">
                 <mat-chip color="warn" selected>Sin stock</mat-chip>

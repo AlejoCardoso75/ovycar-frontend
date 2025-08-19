@@ -13,7 +13,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import { VehiculoService } from '../../services/vehiculo.service';
 import { ClienteService } from '../../services/cliente.service';
 import { Vehiculo, VehiculoDTO } from '../../models/vehiculo.model';
@@ -37,6 +40,7 @@ import { ClienteDTO } from '../../models/cliente.model';
     MatChipsModule,
     MatTooltipModule,
     MatSelectModule,
+    MatAutocompleteModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -44,7 +48,7 @@ import { ClienteDTO } from '../../models/cliente.model';
   styleUrls: ['./vehiculos.component.scss']
 })
 export class VehiculosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'cliente', 'placa', 'marca', 'modelo', 'año', 'color', 'kilometraje', 'activo', 'acciones'];
+  displayedColumns: string[] = ['cliente', 'placa', 'marca', 'modelo', 'año', 'color', 'kilometraje', 'activo', 'acciones'];
   dataSource = new MatTableDataSource<VehiculoDTO>([]);
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -57,6 +61,10 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
   searchTerm = '';
   showDialog = false;
   clientes: ClienteDTO[] = [];
+  
+  // Propiedades para autocompletado de clientes
+  filteredClientes!: Observable<ClienteDTO[]>;
+  selectedCliente: ClienteDTO | null = null;
 
   constructor(
     private vehiculoService: VehiculoService,
@@ -79,13 +87,13 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
 
   initForm(): void {
     this.vehiculoForm = this.fb.group({
+      clienteSearch: ['', [Validators.required]],
       clienteId: ['', [Validators.required]],
       placa: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(10)]],
       marca: ['', [Validators.required, Validators.minLength(2)]],
       modelo: ['', [Validators.required, Validators.minLength(1)]],
       anio: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
       color: ['', [Validators.required, Validators.minLength(2)]],
-      numeroVin: ['', [Validators.minLength(17), Validators.maxLength(17)]],
       kilometraje: ['', [Validators.required, Validators.min(0)]],
       activo: [true]
     });
@@ -107,12 +115,51 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
     this.clienteService.getAllClientes().subscribe({
       next: (clientes) => {
         this.clientes = clientes;
+        this.setupClienteFilter();
       },
       error: (error) => {
         console.error('Error cargando clientes:', error);
         this.snackBar.open('Error al cargar los clientes', 'Cerrar', { duration: 3000 });
       }
     });
+  }
+
+  setupClienteFilter(): void {
+    this.filteredClientes = this.vehiculoForm.get('clienteSearch')!.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterClientes(value || ''))
+    );
+  }
+
+  private _filterClientes(value: string): ClienteDTO[] {
+    const filterValue = value.toLowerCase();
+    return this.clientes.filter(cliente => 
+      cliente.nombre.toLowerCase().includes(filterValue) ||
+      cliente.apellido.toLowerCase().includes(filterValue) ||
+      cliente.documento.toLowerCase().includes(filterValue)
+    );
+  }
+
+  onClienteSelected(clienteId: number): void {
+    const cliente = this.clientes.find(c => c.id === clienteId);
+    if (cliente) {
+      this.selectedCliente = cliente;
+      this.vehiculoForm.patchValue({
+        clienteId: cliente.id,
+        clienteSearch: `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}`
+      });
+    }
+  }
+
+  displayClienteFn = (clienteId: number | string): string => {
+    if (typeof clienteId === 'string') {
+      return clienteId;
+    }
+    if (typeof clienteId === 'number') {
+      const cliente = this.clientes.find(c => c.id === clienteId);
+      return cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}` : '';
+    }
+    return '';
   }
 
   applyFilter(): void {
@@ -134,19 +181,24 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
     this.showDialog = true;
     
     if (vehiculo) {
+      // Buscar el cliente para mostrar en el campo de búsqueda
+      const cliente = this.clientes.find(c => c.id === vehiculo.clienteId);
+      this.selectedCliente = cliente || null;
+      
       this.vehiculoForm.patchValue({
         clienteId: vehiculo.clienteId,
+        clienteSearch: cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}` : '',
         placa: vehiculo.placa,
         marca: vehiculo.marca,
         modelo: vehiculo.modelo,
         anio: vehiculo.anio,
         color: vehiculo.color,
-        numeroVin: vehiculo.numeroVin || '',
         kilometraje: vehiculo.kilometraje,
         activo: vehiculo.activo
       });
     } else {
       this.vehiculoForm.reset({ activo: true });
+      this.selectedCliente = null;
     }
   }
 
@@ -206,6 +258,7 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
   closeDialog(): void {
     this.isEditing = false;
     this.selectedVehiculo = null;
+    this.selectedCliente = null;
     this.showDialog = false;
     this.vehiculoForm.reset({ activo: true });
   }

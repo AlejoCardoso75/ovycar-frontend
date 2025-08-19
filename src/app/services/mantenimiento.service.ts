@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Mantenimiento, MantenimientoDTO } from '../models/mantenimiento.model';
+import { DeleteInfo } from '../models/delete-info.model';
 
 @Injectable({
   providedIn: 'root'
@@ -70,5 +71,21 @@ export class MantenimientoService {
 
   cancelarMantenimiento(id: number): Observable<MantenimientoDTO> {
     return this.http.put<MantenimientoDTO>(`${this.apiUrl}/mantenimientos/${id}/cancelar`, {});
+  }
+
+  canDeleteMantenimiento(id: number): Observable<{canDelete: boolean}> {
+    return this.http.get<{canDelete: boolean}>(`${this.apiUrl}/mantenimientos/${id}/can-delete`);
+  }
+
+  deleteMantenimientoWithCascade(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/mantenimientos/${id}/cascade`);
+  }
+
+  getFacturasByMantenimiento(id: number): Observable<{facturas: any[]}> {
+    return this.http.get<{facturas: any[]}>(`${this.apiUrl}/mantenimientos/${id}/facturas`);
+  }
+
+  getDeleteInfo(id: number): Observable<DeleteInfo> {
+    return this.http.get<DeleteInfo>(`${this.apiUrl}/mantenimientos/${id}/delete-info`);
   }
 } 

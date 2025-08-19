@@ -40,7 +40,7 @@ import { Cliente, ClienteDTO } from '../../models/cliente.model';
   styleUrls: ['./clientes.component.scss']
 })
 export class ClientesComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'apellido', 'documento', 'telefono', 'email', 'activo', 'acciones'];
+  displayedColumns: string[] = ['nombre', 'apellido', 'documento', 'telefono', 'email', 'activo', 'acciones'];
   dataSource = new MatTableDataSource<ClienteDTO>([]);
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;

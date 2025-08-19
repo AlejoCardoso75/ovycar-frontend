@@ -66,7 +66,6 @@ export class ProductosComponent implements OnInit, AfterViewInit {
   // Estadísticas
   totalProductos = 0;
   totalStock = 0;
-  valorTotalInventario = 0;
   productosBajoStock = 0;
 
   constructor(
@@ -221,8 +220,7 @@ export class ProductosComponent implements OnInit, AfterViewInit {
   calcularEstadisticas(): void {
     this.totalProductos = this.dataSource.data.length;
     this.totalStock = this.dataSource.data.reduce((sum, p) => sum + p.stock, 0);
-    this.valorTotalInventario = this.dataSource.data.reduce((sum, p) => sum + (p.precioVenta * p.stock), 0);
-    this.productosBajoStock = this.dataSource.data.filter(p => p.stock < p.stockMinimo).length;
+    this.productosBajoStock = this.dataSource.data.filter(p => p.stock <= 3).length;
   }
 
   applyFilter(event: any): void {
@@ -337,9 +335,9 @@ export class ProductosComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getStockStatus(stock: number, stockMinimo?: number): string {
+  getStockStatus(stock: number): string {
     if (stock === 0) return 'sin-stock';
-    if (stockMinimo && stock <= stockMinimo) return 'stock-bajo';
+    if (stock <= 3) return 'stock-bajo';
     return 'stock-ok';
   }
 

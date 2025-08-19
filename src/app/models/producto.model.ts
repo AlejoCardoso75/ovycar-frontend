@@ -6,7 +6,6 @@ export interface Producto {
   precioCompra: number;
   precioVenta: number;
   stock: number;
-  stockMinimo: number;
   categoria?: string;
   marca?: string;
   activo?: boolean;
@@ -20,7 +19,6 @@ export interface ProductoDTO {
   precioCompra: number;
   precioVenta: number;
   stock: number;
-  stockMinimo: number;
   categoria?: string;
   marca?: string;
   activo: boolean;

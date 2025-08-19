@@ -18,7 +18,10 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import { FacturaService } from '../../services/factura.service';
 import { ClienteService } from '../../services/cliente.service';
 import { MantenimientoService } from '../../services/mantenimiento.service';
@@ -53,6 +56,7 @@ import { ServicioDTO } from '../../models/servicio.model';
     MatTabsModule,
     MatExpansionModule,
     MatDividerModule,
+    MatAutocompleteModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -73,7 +77,10 @@ export class FacturasComponent implements OnInit, AfterViewInit {
   searchTerm = '';
   showDialog = false;
   clientes: ClienteDTO[] = [];
+  filteredClientes!: Observable<ClienteDTO[]>;
+  selectedCliente: ClienteDTO | null = null;
   mantenimientos: MantenimientoDTO[] = [];
+  mantenimientosCliente: MantenimientoDTO[] = [];
   productos: ProductoDTO[] = [];
   servicios: ServicioDTO[] = [];
   estados = Object.values(EstadoFactura);
@@ -123,15 +130,14 @@ export class FacturasComponent implements OnInit, AfterViewInit {
 
   initForm(): void {
     this.facturaForm = this.fb.group({
+      clienteSearch: ['', [Validators.required]],
       clienteId: ['', [Validators.required]],
       mantenimientoId: [''],
       fechaEmision: [new Date().toISOString().split('T')[0], [Validators.required]],
-      fechaVencimiento: [''],
       subtotal: [0, [Validators.min(0)]],
       impuestos: [0, [Validators.min(0)]],
       descuento: [0, [Validators.min(0)]],
       total: [0, [Validators.required, Validators.min(0)]],
-      estado: [EstadoFactura.PENDIENTE, [Validators.required]],
       observaciones: [''],
       detalles: this.fb.array([])
     });
@@ -243,9 +249,78 @@ export class FacturasComponent implements OnInit, AfterViewInit {
     this.clienteService.getAllClientes().subscribe({
       next: (clientes) => {
         this.clientes = clientes;
+        this.setupClienteFilter();
       },
       error: (error) => {
         console.error('Error cargando clientes:', error);
+      }
+    });
+  }
+
+  setupClienteFilter(): void {
+    this.filteredClientes = this.facturaForm.get('clienteSearch')!.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        // Si el valor es null, undefined o string vacío, mostrar todos los clientes
+        if (!value || typeof value !== 'string') {
+          return this.clientes;
+        }
+        return this._filterClientes(value);
+      })
+    );
+  }
+
+  private _filterClientes(value: string): ClienteDTO[] {
+    const filterValue = value.toLowerCase();
+    return this.clientes.filter(cliente => 
+      cliente.nombre.toLowerCase().includes(filterValue) ||
+      cliente.apellido.toLowerCase().includes(filterValue) ||
+      cliente.documento.toLowerCase().includes(filterValue)
+    );
+  }
+
+  onClienteSelected(clienteId: number): void {
+    const cliente = this.clientes.find(c => c.id === clienteId);
+    if (cliente) {
+      this.selectedCliente = cliente;
+      this.facturaForm.patchValue({
+        clienteId: cliente.id,
+        clienteSearch: `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}`
+      });
+      // Cargar mantenimientos del cliente seleccionado
+      this.loadMantenimientosCliente(cliente.id);
+    }
+  }
+
+  // Método para limpiar la selección de cliente
+  clearClienteSelection(): void {
+    this.selectedCliente = null;
+    this.mantenimientosCliente = [];
+    this.facturaForm.patchValue({
+      clienteId: '',
+      clienteSearch: ''
+    });
+  }
+
+  displayClienteFn = (clienteId: number | string): string => {
+    if (typeof clienteId === 'string') {
+      return clienteId;
+    }
+    if (typeof clienteId === 'number') {
+      const cliente = this.clientes.find(c => c.id === clienteId);
+      return cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}` : '';
+    }
+    return '';
+  }
+
+  loadMantenimientosCliente(clienteId: number): void {
+    this.mantenimientoService.getMantenimientosByCliente(clienteId).subscribe({
+      next: (mantenimientos) => {
+        this.mantenimientosCliente = mantenimientos;
+      },
+      error: (error) => {
+        console.error('Error cargando mantenimientos del cliente:', error);
+        this.mantenimientosCliente = [];
       }
     });
   }
@@ -351,18 +426,26 @@ export class FacturasComponent implements OnInit, AfterViewInit {
     }
     
     if (factura) {
+      // Buscar el cliente para mostrar en el campo de búsqueda
+      const cliente = this.clientes.find(c => c.id === factura.clienteId);
+      this.selectedCliente = cliente || null;
+      
       this.facturaForm.patchValue({
         clienteId: factura.clienteId,
+        clienteSearch: cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}` : '',
         mantenimientoId: factura.mantenimientoId,
         fechaEmision: factura.fechaEmision.split('T')[0],
-        fechaVencimiento: factura.fechaVencimiento ? factura.fechaVencimiento.split('T')[0] : '',
         subtotal: factura.subtotal,
         impuestos: factura.impuestos,
         descuento: factura.descuento,
         total: factura.total,
-        estado: factura.estado,
         observaciones: factura.observaciones || ''
       });
+      
+      // Cargar mantenimientos del cliente si existe
+      if (cliente) {
+        this.loadMantenimientosCliente(cliente.id);
+      }
       
       // Cargar detalles si existen
       if (factura.detalles && factura.detalles.length > 0) {
@@ -380,8 +463,9 @@ export class FacturasComponent implements OnInit, AfterViewInit {
         });
       }
     } else {
+      this.selectedCliente = null;
+      this.mantenimientosCliente = [];
       this.facturaForm.reset({ 
-        estado: EstadoFactura.PENDIENTE,
         fechaEmision: new Date().toISOString().split('T')[0],
         subtotal: 0,
         impuestos: 0,
@@ -408,6 +492,7 @@ export class FacturasComponent implements OnInit, AfterViewInit {
       
       const facturaToSend = {
         ...facturaData,
+        estado: EstadoFactura.PENDIENTE, // Siempre establecer como PENDIENTE
         detalles: detalles
       };
       
@@ -485,9 +570,10 @@ export class FacturasComponent implements OnInit, AfterViewInit {
   closeDialog(): void {
     this.isEditing = false;
     this.selectedFactura = null;
+    this.selectedCliente = null;
+    this.mantenimientosCliente = [];
     this.showDialog = false;
     this.facturaForm.reset({ 
-      estado: EstadoFactura.PENDIENTE,
       fechaEmision: new Date().toISOString().split('T')[0],
       subtotal: 0,
       impuestos: 0,

@@ -15,7 +15,6 @@ export interface Mantenimiento {
   fechaFin?: string;
   estado: EstadoMantenimiento;
   kilometrajeActual?: number;
-  kilometrajeProximo?: number;
   observaciones?: string;
   costo?: number;
 }
@@ -35,7 +34,6 @@ export interface MantenimientoDTO {
   fechaFin?: string;
   estado: EstadoMantenimiento;
   kilometrajeActual?: number;
-  kilometrajeProximo?: number;
   observaciones?: string;
   costo?: number;
   fechaRegistro: string;

@@ -102,12 +102,12 @@ export class DashboardComponent implements OnInit {
     this.router.navigate([route]);
   }
 
-  getStockPercentage(stock: number, stockMinimo: number): number {
-    return Math.min((stock / stockMinimo) * 100, 100);
+  getStockPercentage(stock: number): number {
+    return Math.min((stock / 3) * 100, 100);
   }
 
-  getStockColor(stock: number, stockMinimo: number): string {
-    const percentage = this.getStockPercentage(stock, stockMinimo);
+  getStockColor(stock: number): string {
+    const percentage = this.getStockPercentage(stock);
     if (percentage <= 20) return 'warn';
     if (percentage <= 50) return 'accent';
     return 'primary';

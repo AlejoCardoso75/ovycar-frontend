@@ -75,8 +75,8 @@ export class ClientesComponent implements OnInit, AfterViewInit {
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       apellido: ['', [Validators.required, Validators.minLength(2)]],
-      documento: ['', [Validators.required, Validators.minLength(5)]],
-      telefono: ['', [Validators.pattern(/^[0-9+\-\s()]+$/)]],
+      documento: ['', [Validators.minLength(5)]],
+      telefono: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
       email: ['', [Validators.email]],
       direccion: [''],
       activo: [true]
@@ -124,7 +124,15 @@ export class ClientesComponent implements OnInit, AfterViewInit {
         activo: cliente.activo
       });
     } else {
-      this.clienteForm.reset({ activo: true });
+      this.clienteForm.reset({ 
+        activo: true,
+        nombre: '',
+        apellido: '',
+        documento: '',
+        telefono: '',
+        email: '',
+        direccion: ''
+      });
     }
   }
 
@@ -185,7 +193,15 @@ export class ClientesComponent implements OnInit, AfterViewInit {
     this.isEditing = false;
     this.selectedCliente = null;
     this.showDialog = false;
-    this.clienteForm.reset({ activo: true });
+    this.clienteForm.reset({ 
+      activo: true,
+      nombre: '',
+      apellido: '',
+      documento: '',
+      telefono: '',
+      email: '',
+      direccion: ''
+    });
   }
 
   getErrorMessage(field: string): string {

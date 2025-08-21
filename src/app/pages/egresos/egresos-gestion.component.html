@@ -1,0 +1,207 @@
+<div class="egresos-gestion-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1>💸 Gestión de Egresos</h1>
+        <p>Administra los gastos del taller</p>
+      </div>
+      <button mat-raised-button color="primary" (click)="openDialog()">
+        <mat-icon>add</mat-icon>
+        Nuevo Egreso
+      </button>
+    </div>
+  </div>
+
+  <!-- Controles -->
+  <div class="controls">
+    <div class="search-section">
+      <mat-form-field appearance="outline">
+        <mat-label>Buscar egresos</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Concepto, categoría, responsable...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+    
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ egresos.length }}</div>
+          <div class="stat-label">Total Egresos</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">${{ getTotalEgresos() | number:'1.0-0' }}</div>
+          <div class="stat-label">Total Gastado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="content">
+    <!-- Indicador de carga -->
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Cargando egresos...</p>
+    </div>
+
+    <!-- Mensaje cuando no hay egresos -->
+    <div *ngIf="!loading && egresos.length === 0" class="empty-state">
+      <mat-icon class="empty-icon">receipt_long</mat-icon>
+      <h3>No hay egresos registrados</h3>
+      <p>Comienza agregando tu primer egreso usando el botón "Nuevo Egreso"</p>
+      <button mat-raised-button color="primary" (click)="openDialog()">
+        <mat-icon>add</mat-icon>
+        Agregar Primer Egreso
+      </button>
+    </div>
+
+    <!-- Tabla de egresos -->
+    <div *ngIf="!loading && egresos.length > 0" class="table-view">
+      <table mat-table [dataSource]="dataSource" matSort>
+        <ng-container matColumnDef="concepto">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Concepto</th>
+          <td mat-cell *matCellDef="let egreso">{{ egreso.concepto }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="descripcion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción</th>
+          <td mat-cell *matCellDef="let egreso">{{ egreso.descripcion || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="monto">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Monto</th>
+          <td mat-cell *matCellDef="let egreso" class="amount">${{ egreso.monto | number:'1.0-0' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="categoria">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoría</th>
+          <td mat-cell *matCellDef="let egreso">
+            <span class="categoria-badge">{{ egreso.categoria || 'Sin categoría' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="fechaEgreso">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+          <td mat-cell *matCellDef="let egreso">{{ formatDate(egreso.fechaEgreso) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="responsable">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Responsable</th>
+          <td mat-cell *matCellDef="let egreso">{{ egreso.responsable || 'No especificado' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let egreso">
+            <button mat-icon-button color="primary" (click)="editEgreso(egreso)" matTooltip="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteEgreso(egreso)" matTooltip="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator 
+        #paginator
+        [pageSizeOptions]="[5, 10, 25, 50, 100]" 
+        [pageSize]="10"
+        [length]="dataSource.data.length"
+        showFirstLastButtons
+        aria-label="Seleccionar página de egresos">
+      </mat-paginator>
+    </div>
+  </div>
+
+  <!-- Dialog para crear/editar egreso -->
+  <div class="dialog-overlay" *ngIf="dialogOpen" (click)="closeDialog()"></div>
+  <div class="dialog" *ngIf="dialogOpen">
+    <div class="dialog-header">
+      <h2>{{ editingEgreso ? 'Editar Egreso' : 'Nuevo Egreso' }}</h2>
+      <button mat-icon-button (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="egresoForm" (ngSubmit)="saveEgreso()" class="dialog-content">
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Concepto *</mat-label>
+          <input matInput formControlName="concepto" placeholder="Ej: Compra de repuestos">
+          <mat-error *ngIf="egresoForm.get('concepto')?.hasError('required')">
+            El concepto es requerido
+          </mat-error>
+          <mat-error *ngIf="egresoForm.get('concepto')?.hasError('minlength')">
+            El concepto debe tener al menos 3 caracteres
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="descripcion" placeholder="Descripción detallada del gasto" rows="3"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Monto *</mat-label>
+          <input matInput type="number" formControlName="monto" placeholder="0">
+          <mat-error *ngIf="egresoForm.get('monto')?.hasError('required')">
+            El monto es requerido
+          </mat-error>
+          <mat-error *ngIf="egresoForm.get('monto')?.hasError('min')">
+            El monto debe ser mayor a 0
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Categoría *</mat-label>
+          <mat-select formControlName="categoria">
+            <mat-option *ngFor="let categoria of categorias" [value]="categoria">
+              {{ categoria }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="egresoForm.get('categoria')?.hasError('required')">
+            La categoría es requerida
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de Egreso *</mat-label>
+          <input matInput type="date" formControlName="fechaEgreso" placeholder="dd/mm/aaaa">
+          <mat-error *ngIf="egresoForm.get('fechaEgreso')?.hasError('required')">
+            La fecha es requerida
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Responsable *</mat-label>
+          <input matInput formControlName="responsable" placeholder="Nombre del responsable">
+          <mat-error *ngIf="egresoForm.get('responsable')?.hasError('required')">
+            El responsable es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="dialog-actions">
+        <button mat-button type="button" (click)="closeDialog()">Cancelar</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="!egresoForm.valid">
+          {{ editingEgreso ? 'Actualizar' : 'Crear' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -3,199 +3,144 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface Ingreso {
+export interface IngresoMantenimiento {
   id: number;
   fecha: Date;
   concepto: string;
   monto: number;
-  tipo: 'venta' | 'servicio' | 'mantenimiento';
-  cliente?: string;
-  factura?: string;
-  estado: 'pagado' | 'pendiente' | 'cancelado';
+  cliente: string;
+  vehiculo: string;
+  mecanico: string;
+  estado: 'completado' | 'en_proceso' | 'cancelado' | 'pendiente';
+  semana: string; // Formato: "YYYY-WW" (año-semana)
 }
 
-export interface ResumenIngresos {
-  total: number;
-  ventas: number;
-  servicios: number;
-  mantenimientos: number;
-  promedio: number;
-  crecimiento: number;
-}
-
-export interface FiltroIngresos {
+export interface ResumenSemanal {
+  semana: string;
   fechaInicio: Date;
   fechaFin: Date;
-  tipo?: string;
-  estado?: string;
-  cliente?: string;
+  totalIngresos: number;
+  cantidadMantenimientos: number;
+  promedioPorMantenimiento: number;
+  crecimientoVsSemanaAnterior: number;
+  mantenimientos: IngresoMantenimiento[];
+}
+
+export interface HistorialSemanas {
+  semanas: ResumenSemanal[];
+  totalGeneral: number;
+  promedioSemanal: number;
+  crecimientoPromedio: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class IngresosService {
+
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
-  // Obtener todos los ingresos
-  getAllIngresos(): Observable<Ingreso[]> {
-    return this.http.get<Ingreso[]>(`${this.apiUrl}/ingresos`);
+  // Obtener historial completo de semanas
+  getHistorialSemanas(): Observable<HistorialSemanas> {
+    return this.http.get<HistorialSemanas>(`${this.apiUrl}/ingresos/historial-semanas`);
   }
 
-  // Obtener ingresos con filtros
-  getIngresosFiltrados(filtros: FiltroIngresos): Observable<Ingreso[]> {
-    const params = new URLSearchParams();
-    params.append('fechaInicio', filtros.fechaInicio.toISOString());
-    params.append('fechaFin', filtros.fechaFin.toISOString());
+  // Obtener resumen de una semana específica
+  getResumenSemana(semana: string): Observable<ResumenSemanal> {
+    return this.http.get<ResumenSemanal>(`${this.apiUrl}/ingresos/semana/${semana}`);
+  }
+
+  // Obtener ingresos por rango de fechas
+  getIngresosPorFecha(fechaInicio: Date, fechaFin: Date): Observable<IngresoMantenimiento[]> {
+    const params = {
+      fechaInicio: fechaInicio.toISOString().split('T')[0],
+      fechaFin: fechaFin.toISOString().split('T')[0]
+    };
+    return this.http.get<IngresoMantenimiento[]>(`${this.apiUrl}/ingresos/por-fecha`, { params });
+  }
+
+  // Métodos auxiliares para cálculos de fechas
+  getSemana(fecha: Date): string {
+    const year = fecha.getFullYear();
+    const week = this.getWeekNumber(fecha);
+    return `${year}-${week.toString().padStart(2, '0')}`;
+  }
+
+  getFechasSemana(semana: string): { fechaInicio: Date; fechaFin: Date } {
+    const [year, week] = semana.split('-').map(Number);
     
-    if (filtros.tipo) params.append('tipo', filtros.tipo);
-    if (filtros.estado) params.append('estado', filtros.estado);
-    if (filtros.cliente) params.append('cliente', filtros.cliente);
-
-    return this.http.get<Ingreso[]>(`${this.apiUrl}/ingresos/filtrados?${params.toString()}`);
+    // Calcular el primer día del año
+    const firstDayOfYear = new Date(year, 0, 1);
+    
+    // Calcular el primer día de la semana
+    const daysToAdd = (week - 1) * 7;
+    const firstDayOfWeek = new Date(firstDayOfYear.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+    
+    // Ajustar al lunes
+    const dayOfWeek = firstDayOfWeek.getDay();
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const monday = new Date(firstDayOfWeek.getTime() - daysToMonday * 24 * 60 * 60 * 1000);
+    
+    // Domingo es 6 días después del lunes
+    const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
+    
+    return { fechaInicio: monday, fechaFin: sunday };
   }
 
-  // Obtener resumen de ingresos
-  getResumenIngresos(fechaInicio: Date, fechaFin: Date): Observable<ResumenIngresos> {
-    const params = new URLSearchParams();
-    params.append('fechaInicio', fechaInicio.toISOString());
-    params.append('fechaFin', fechaFin.toISOString());
-
-    return this.http.get<ResumenIngresos>(`${this.apiUrl}/ingresos/resumen?${params.toString()}`);
+  private getWeekNumber(date: Date): number {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
   }
 
-  // Obtener ingresos por período
-  getIngresosPorPeriodo(periodo: 'semanal' | 'mensual' | 'trimestral' | 'anual'): Observable<Ingreso[]> {
-    return this.http.get<Ingreso[]>(`${this.apiUrl}/ingresos/periodo/${periodo}`);
-  }
-
-  // Crear nuevo ingreso
-  createIngreso(ingreso: Omit<Ingreso, 'id'>): Observable<Ingreso> {
-    return this.http.post<Ingreso>(`${this.apiUrl}/ingresos`, ingreso);
-  }
-
-  // Actualizar ingreso
-  updateIngreso(id: number, ingreso: Partial<Ingreso>): Observable<Ingreso> {
-    return this.http.put<Ingreso>(`${this.apiUrl}/ingresos/${id}`, ingreso);
-  }
-
-  // Eliminar ingreso
-  deleteIngreso(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/ingresos/${id}`);
-  }
-
-  // Obtener estadísticas de crecimiento
-  getEstadisticasCrecimiento(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/ingresos/estadisticas`);
-  }
-
-  // Datos de ejemplo para desarrollo
-  getDatosEjemplo(): Observable<Ingreso[]> {
-    const ingresos: Ingreso[] = [
-      {
-        id: 1,
-        fecha: new Date(2024, 11, 25),
-        concepto: 'Cambio de aceite Toyota Corolla',
-        monto: 85000,
-        tipo: 'servicio',
-        cliente: 'Juan Pérez',
-        factura: 'FAC-001',
-        estado: 'pagado'
-      },
-      {
-        id: 2,
-        fecha: new Date(2024, 11, 24),
-        concepto: 'Venta de frenos delanteros',
-        monto: 65000,
-        tipo: 'venta',
-        cliente: 'María González',
-        factura: 'FAC-002',
-        estado: 'pagado'
-      },
-      {
-        id: 3,
-        fecha: new Date(2024, 11, 23),
-        concepto: 'Mantenimiento preventivo Honda Civic',
-        monto: 120000,
-        tipo: 'mantenimiento',
-        cliente: 'Carlos Rodríguez',
-        factura: 'FAC-003',
-        estado: 'pagado'
-      },
-      {
-        id: 4,
-        fecha: new Date(2024, 11, 22),
-        concepto: 'Venta de batería 60Ah',
-        monto: 250000,
-        tipo: 'venta',
-        cliente: 'Ana López',
-        factura: 'FAC-004',
-        estado: 'pagado'
-      },
-      {
-        id: 5,
-        fecha: new Date(2024, 11, 21),
-        concepto: 'Alineación y balanceo',
-        monto: 80000,
-        tipo: 'servicio',
-        cliente: 'Luis Martínez',
-        factura: 'FAC-005',
-        estado: 'pendiente'
-      },
-      {
-        id: 6,
-        fecha: new Date(2024, 11, 20),
-        concepto: 'Cambio de llantas completas',
-        monto: 720000,
-        tipo: 'mantenimiento',
-        cliente: 'Pedro García',
-        factura: 'FAC-006',
-        estado: 'pagado'
-      },
-      {
-        id: 7,
-        fecha: new Date(2024, 11, 19),
-        concepto: 'Venta de filtros de aire',
-        monto: 20000,
-        tipo: 'venta',
-        cliente: 'Carmen Ruiz',
-        factura: 'FAC-007',
-        estado: 'pagado'
-      },
-      {
-        id: 8,
-        fecha: new Date(2024, 11, 18),
-        concepto: 'Diagnóstico computarizado',
-        monto: 35000,
-        tipo: 'servicio',
-        cliente: 'Roberto Silva',
-        factura: 'FAC-008',
-        estado: 'pagado'
-      },
-      {
-        id: 9,
-        fecha: new Date(2024, 11, 17),
-        concepto: 'Venta de aceite de transmisión',
-        monto: 50000,
-        tipo: 'venta',
-        cliente: 'Patricia Morales',
-        factura: 'FAC-009',
-        estado: 'pagado'
-      },
-      {
-        id: 10,
-        fecha: new Date(2024, 11, 16),
-        concepto: 'Reparación de sistema de frenos',
-        monto: 185000,
-        tipo: 'mantenimiento',
-        cliente: 'Fernando Herrera',
-        factura: 'FAC-010',
-        estado: 'pagado'
-      }
-    ];
-
-    return of(ingresos);
+  // Método de respaldo con datos de ejemplo (solo para desarrollo)
+  getDatosEjemplo(): Observable<HistorialSemanas> {
+    // Solo usar en caso de que el backend no esté disponible
+    console.warn('Usando datos de ejemplo - Backend no disponible');
+    
+    const historial: HistorialSemanas = {
+      semanas: [
+        {
+          semana: "2024-52",
+          fechaInicio: new Date(2024, 11, 23),
+          fechaFin: new Date(2024, 11, 29),
+          totalIngresos: 485000,
+          cantidadMantenimientos: 6,
+          promedioPorMantenimiento: 80833,
+          crecimientoVsSemanaAnterior: 15.2,
+          mantenimientos: [
+            {
+              id: 1,
+              fecha: new Date(2024, 11, 25),
+              concepto: 'Cambio de aceite y filtros Toyota Corolla',
+              monto: 85000,
+              cliente: 'Juan Pérez',
+              vehiculo: 'Toyota Corolla - ABC123',
+              mecanico: 'Carlos Méndez',
+              estado: 'completado',
+              semana: "2024-52"
+            },
+            {
+              id: 2,
+              fecha: new Date(2024, 11, 26),
+              concepto: 'Mantenimiento preventivo Honda Civic',
+              monto: 120000,
+              cliente: 'María González',
+              vehiculo: 'Honda Civic - XYZ789',
+              mecanico: 'Roberto Silva',
+              estado: 'completado',
+              semana: "2024-52"
+            }
+          ]
+        }
+      ],
+      totalGeneral: 485000,
+      promedioSemanal: 485000,
+      crecimientoPromedio: 15.2
+    };
+    
+    return of(historial);
   }
 } 

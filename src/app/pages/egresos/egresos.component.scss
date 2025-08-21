@@ -1,4 +1,4 @@
-.ingresos-container {
+.egresos-container {
   min-height: 100vh;
   background: #ffffff;
   padding: 20px;
@@ -38,18 +38,18 @@
     }
 
     .refresh-btn {
-      background: #007bff;
+      background: #dc3545;
       border: none;
       border-radius: 8px;
       padding: 10px 20px;
       font-weight: 500;
       transition: all 0.3s ease;
-      box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+      box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
 
       &:hover {
-        background: #0056b3;
+        background: #c82333;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
       }
 
       mat-icon {
@@ -116,15 +116,15 @@
       font-weight: 600;
     }
 
-          .week-info {
-        background: #007bff;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        white-space: nowrap;
-      }
+    .week-info {
+      background: #dc3545;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
   }
 
   .week-stats {
@@ -145,7 +145,7 @@
         display: block;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #333;
+        color: #dc3545;
         margin-bottom: 4px;
       }
 
@@ -165,7 +165,7 @@
       font-weight: 600;
     }
 
-    .maintenance-table {
+    .egresos-table {
       width: 100%;
       border-collapse: collapse;
       background: white;
@@ -174,7 +174,7 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
       th {
-        background: #007bff;
+        background: #dc3545;
         color: white;
         padding: 12px;
         text-align: left;
@@ -189,7 +189,7 @@
 
         &.amount {
           font-weight: 600;
-          color: #28a745;
+          color: #dc3545;
         }
       }
 
@@ -236,13 +236,13 @@
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        border-color: #007bff;
+        border-color: #dc3545;
       }
 
       &.selected {
-        border-color: #007bff;
-        background: #f8f9ff;
-        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+        border-color: #dc3545;
+        background: #fff5f5;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
       }
 
       .week-header {
@@ -266,11 +266,11 @@
           display: block;
           font-size: 1.3rem;
           font-weight: 600;
-          color: #28a745;
+          color: #dc3545;
           margin-bottom: 4px;
         }
 
-        .maintenance-count {
+        .egresos-count {
           font-size: 0.85rem;
           color: #666;
         }
@@ -281,7 +281,7 @@
 
 // Responsive
 @media (max-width: 768px) {
-  .ingresos-container {
+  .egresos-container {
     padding: 15px;
   }
 
@@ -306,11 +306,11 @@
     grid-template-columns: 1fr;
   }
 
-  .maintenance-table {
+  .egresos-table {
     font-size: 0.85rem;
 
     th, td {
       padding: 8px;
     }
   }
-} 
+}

@@ -17,6 +17,7 @@ export interface Mantenimiento {
   kilometrajeActual?: number;
   observaciones?: string;
   costo?: number;
+  mecanico?: string;
 }
 
 export interface MantenimientoDTO {
@@ -36,5 +37,6 @@ export interface MantenimientoDTO {
   kilometrajeActual?: number;
   observaciones?: string;
   costo?: number;
+  mecanico?: string;
   fechaRegistro: string;
 } 

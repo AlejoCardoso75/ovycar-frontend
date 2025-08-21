@@ -13,7 +13,7 @@
         <div class="search-section">
           <mat-form-field appearance="outline">
             <mat-label>Buscar vehículos</mat-label>
-            <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Placa, marca, modelo, cliente o color">
+            <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Placa, marca, línea, cliente o color">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
         </div>
@@ -48,9 +48,9 @@
             <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.marca }} </td>
           </ng-container>
 
-          <!-- Columna Modelo -->
+          <!-- Columna Línea -->
           <ng-container matColumnDef="modelo">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> Modelo </th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Línea </th>
             <td mat-cell *matCellDef="let vehiculo"> {{ vehiculo.modelo }} </td>
           </ng-container>
 
@@ -172,8 +172,8 @@
 
           <div class="form-row">
             <mat-form-field appearance="outline">
-              <mat-label>Modelo *</mat-label>
-              <input matInput formControlName="modelo" placeholder="Ingrese el modelo">
+              <mat-label>Línea *</mat-label>
+              <input matInput formControlName="modelo" placeholder="Ingrese la línea">
               <mat-error *ngIf="vehiculoForm.get('modelo')?.hasError('required')">
                 {{ getErrorMessage('modelo') }}
               </mat-error>

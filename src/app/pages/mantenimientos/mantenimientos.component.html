@@ -108,7 +108,7 @@
                 <!-- Columna Fecha Programada -->
                 <ng-container matColumnDef="fechaProgramada">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Programada </th>
-                  <td mat-cell *matCellDef="let mantenimiento"> {{ mantenimiento.fechaProgramada | date:'shortDate' }} </td>
+                  <td mat-cell *matCellDef="let mantenimiento"> {{ formatDate(mantenimiento.fechaProgramada) }} </td>
                 </ng-container>
 
                 <!-- Columna Estado -->
@@ -118,6 +118,14 @@
                     <mat-chip [color]="getEstadoColor(mantenimiento.estado)" selected>
                       {{ mantenimiento.estado }}
                     </mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- Columna Mecánico -->
+                <ng-container matColumnDef="mecanico">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header> Mecánico </th>
+                  <td mat-cell *matCellDef="let mantenimiento"> 
+                    {{ mantenimiento.mecanico || '-' }} 
                   </td>
                 </ng-container>
 
@@ -187,7 +195,8 @@
                   <mat-card-subtitle>{{ mantenimiento.vehiculoPlaca }} - {{ mantenimiento.clienteNombre }}</mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
-                  <p><strong>Fecha:</strong> {{ mantenimiento.fechaProgramada | date:'shortDate' }}</p>
+                  <p><strong>Fecha:</strong> {{ formatDate(mantenimiento.fechaProgramada) }}</p>
+                  <p><strong>Mecánico:</strong> {{ mantenimiento.mecanico || 'No asignado' }}</p>
                   <p><strong>Costo:</strong> {{ mantenimiento.costo ? '$' + (mantenimiento.costo | number:'1.0-0') : 'No definido' }}</p>
                   <p *ngIf="mantenimiento.descripcion"><strong>Descripción:</strong> {{ mantenimiento.descripcion }}</p>
                 </mat-card-content>
@@ -213,7 +222,8 @@
                   <mat-card-subtitle>{{ mantenimiento.vehiculoPlaca }} - {{ mantenimiento.clienteNombre }}</mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
-                  <p><strong>Iniciado:</strong> {{ mantenimiento.fechaInicio | date:'shortDate' }}</p>
+                  <p><strong>Iniciado:</strong> {{ formatDate(mantenimiento.fechaInicio) }}</p>
+                  <p><strong>Mecánico:</strong> {{ mantenimiento.mecanico || 'No asignado' }}</p>
                   <p><strong>Costo:</strong> {{ mantenimiento.costo ? '$' + (mantenimiento.costo | number:'1.0-0') : 'No definido' }}</p>
                   <p *ngIf="mantenimiento.observaciones"><strong>Observaciones:</strong> {{ mantenimiento.observaciones }}</p>
                 </mat-card-content>
@@ -239,7 +249,8 @@
                   <mat-card-subtitle>{{ mantenimiento.vehiculoPlaca }} - {{ mantenimiento.clienteNombre }}</mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
-                  <p><strong>Completado:</strong> {{ mantenimiento.fechaFin | date:'shortDate' }}</p>
+                  <p><strong>Completado:</strong> {{ formatDate(mantenimiento.fechaFin) }}</p>
+                  <p><strong>Mecánico:</strong> {{ mantenimiento.mecanico || 'No asignado' }}</p>
                   <p><strong>Costo:</strong> {{ mantenimiento.costo ? '$' + (mantenimiento.costo | number:'1.0-0') : 'No definido' }}</p>
                   <p *ngIf="mantenimiento.observaciones"><strong>Observaciones:</strong> {{ mantenimiento.observaciones }}</p>
                 </mat-card-content>
@@ -323,6 +334,16 @@
               </mat-select>
               <mat-error *ngIf="mantenimientoForm.get('estado')?.hasError('required')">
                 {{ getErrorMessage('estado') }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Mecánico *</mat-label>
+              <input matInput formControlName="mecanico" placeholder="Nombre del mecánico que realizará el servicio">
+              <mat-error *ngIf="mantenimientoForm.get('mecanico')?.hasError('required')">
+                Debe especificar el mecánico
               </mat-error>
             </mat-form-field>
           </div>

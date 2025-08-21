@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { IngresosService, HistorialSemanas, ResumenSemanal, IngresoMantenimiento } from '../../services/ingresos.service';
+import { EgresosService, HistorialEgresosSemanas, ResumenEgresoSemanal, EgresoSemanal } from '../../services/egresos.service';
 
 @Component({
-  selector: 'app-ingresos',
+  selector: 'app-egresos',
   standalone: true,
   imports: [
     CommonModule,
@@ -14,17 +14,17 @@ import { IngresosService, HistorialSemanas, ResumenSemanal, IngresoMantenimiento
     MatIconModule,
     MatProgressSpinnerModule
   ],
-  templateUrl: './ingresos.component.html',
-  styleUrls: ['./ingresos.component.scss']
+  templateUrl: './egresos.component.html',
+  styleUrls: ['./egresos.component.scss']
 })
-export class IngresosComponent implements OnInit {
-  historial: HistorialSemanas | null = null;
-  semanaSeleccionada: ResumenSemanal | null = null;
-  mantenimientosFiltrados: IngresoMantenimiento[] = [];
+export class EgresosComponent implements OnInit {
+  historial: HistorialEgresosSemanas | null = null;
+  semanaSeleccionada: ResumenEgresoSemanal | null = null;
+  egresosFiltrados: EgresoSemanal[] = [];
   loading = false;
   error = false;
 
-  constructor(private ingresosService: IngresosService) {}
+  constructor(private egresosService: EgresosService) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -34,7 +34,7 @@ export class IngresosComponent implements OnInit {
     this.loading = true;
     this.error = false;
 
-    this.ingresosService.getHistorialSemanas().subscribe({
+    this.egresosService.getHistorialSemanas().subscribe({
       next: (data) => {
         this.historial = data;
         if (data.semanas.length > 0) {
@@ -54,15 +54,15 @@ export class IngresosComponent implements OnInit {
     this.loadData();
   }
 
-  seleccionarSemana(semana: ResumenSemanal): void {
+  seleccionarSemana(semana: ResumenEgresoSemanal): void {
     this.semanaSeleccionada = semana;
-    this.mantenimientosFiltrados = semana.mantenimientos || [];
+    this.egresosFiltrados = semana.egresos || [];
   }
 
-  getTotalMantenimientos(): number {
+  getTotalEgresos(): number {
     if (!this.historial) return 0;
-    return this.historial.semanas.reduce((total: number, semana: ResumenSemanal) => 
-      total + semana.cantidadMantenimientos, 0);
+    return this.historial.semanas.reduce((total, semana) => 
+      total + semana.cantidadEgresos, 0);
   }
 
   getFormattedSemana(semana: string): string {
@@ -87,4 +87,4 @@ export class IngresosComponent implements OnInit {
       year: 'numeric'
     });
   }
-} 
+}

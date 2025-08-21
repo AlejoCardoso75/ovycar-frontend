@@ -60,7 +60,7 @@ import { DeleteInfo, FacturaInfo } from '../../models/delete-info.model';
   styleUrls: ['./mantenimientos.component.scss']
 })
 export class MantenimientosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['vehiculo', 'tipoMantenimiento', 'fechaProgramada', 'estado', 'costo', 'acciones'];
+  displayedColumns: string[] = ['vehiculo', 'tipoMantenimiento', 'fechaProgramada', 'estado', 'mecanico', 'costo', 'acciones'];
   dataSource = new MatTableDataSource<MantenimientoDTO>([]);
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -135,7 +135,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
       estado: [EstadoMantenimiento.PROGRAMADO, [Validators.required]],
       kilometrajeActual: ['', [Validators.min(0)]],
       observaciones: [''],
-      costo: ['', [Validators.min(0)]]
+      costo: ['', [Validators.min(0)]],
+      mecanico: ['', [Validators.required]]
     });
   }
 
@@ -284,7 +285,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
         estado: mantenimiento.estado,
         kilometrajeActual: mantenimiento.kilometrajeActual,
         observaciones: mantenimiento.observaciones || '',
-        costo: mantenimiento.costo
+        costo: mantenimiento.costo,
+        mecanico: mantenimiento.mecanico || ''
       });
     } else {
       this.selectedVehiculo = null;
@@ -310,7 +312,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           estado: mantenimientoData.estado,
           kilometrajeActual: mantenimientoData.kilometrajeActual,
           observaciones: mantenimientoData.observaciones,
-          costo: mantenimientoData.costo
+          costo: mantenimientoData.costo,
+          mecanico: mantenimientoData.mecanico
         };
         
         this.mantenimientoService.updateMantenimiento(this.selectedMantenimiento.id, mantenimientoToUpdate).subscribe({
@@ -334,7 +337,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           estado: mantenimientoData.estado,
           kilometrajeActual: mantenimientoData.kilometrajeActual,
           observaciones: mantenimientoData.observaciones,
-          costo: mantenimientoData.costo
+          costo: mantenimientoData.costo,
+          mecanico: mantenimientoData.mecanico
         };
         
         this.mantenimientoService.createMantenimiento(mantenimientoToCreate).subscribe({
@@ -483,12 +487,27 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   getErrorMessage(field: string): string {
     const control = this.mantenimientoForm.get(field);
     if (control?.hasError('required')) {
-      return 'Este campo es requerido';
+      return 'Este campo es obligatorio';
+    }
+    if (control?.hasError('minlength')) {
+      return `Mínimo ${control.errors?.['minlength'].requiredLength} caracteres`;
     }
     if (control?.hasError('min')) {
-      return 'El valor debe ser mayor o igual a 0';
+      return 'El valor debe ser mayor a 0';
     }
-    return '';
+    return 'Campo inválido';
+  }
+
+  // Método para formatear fechas en formato dd/mm/aaaa
+  formatDate(date: Date | string | undefined): string {
+    if (!date) return '';
+    
+    const fecha = typeof date === 'string' ? new Date(date) : date;
+    return fecha.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   }
 
   getEstadoColor(estado: EstadoMantenimiento): string {

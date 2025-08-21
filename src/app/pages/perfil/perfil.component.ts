@@ -58,4 +58,21 @@ export class PerfilComponent implements OnInit {
   ngOnInit(): void {
     // Los datos ya están cargados en las propiedades
   }
+
+  logout(): void {
+    // Implementar lógica de logout
+    console.log('Logout clicked');
+  }
+
+  // Método para formatear fechas en formato dd/mm/aaaa
+  formatDate(date: Date | string | undefined): string {
+    if (!date) return '';
+    
+    const fecha = typeof date === 'string' ? new Date(date) : date;
+    return fecha.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
 } 

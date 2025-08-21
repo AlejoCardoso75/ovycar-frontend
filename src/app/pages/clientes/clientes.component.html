@@ -102,72 +102,91 @@
     <mat-card class="dialog-card">
       <mat-card-header>
         <mat-card-title>
-          {{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}
+          {{ isEditing ? 'Editar Cliente' : 'Crear Nuevo Cliente' }}
         </mat-card-title>
+        <mat-card-subtitle>
+          Complete la información del cliente. Los campos marcados con * son obligatorios.
+        </mat-card-subtitle>
       </mat-card-header>
       
       <mat-card-content>
         <form [formGroup]="clienteForm" (ngSubmit)="saveCliente()">
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Nombre *</mat-label>
-              <input matInput formControlName="nombre" placeholder="Ingrese el nombre">
-              <mat-error *ngIf="clienteForm.get('nombre')?.hasError('required')">
-                {{ getErrorMessage('nombre') }}
-              </mat-error>
-              <mat-error *ngIf="clienteForm.get('nombre')?.hasError('minlength')">
-                {{ getErrorMessage('nombre') }}
-              </mat-error>
-            </mat-form-field>
+          <!-- Información Personal -->
+          <div class="form-section">
+            <h3>
+              <mat-icon>person</mat-icon>
+              Información Personal
+            </h3>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre *</mat-label>
+                <input matInput formControlName="nombre" placeholder="Ingrese el nombre completo">
+                <mat-error *ngIf="clienteForm.get('nombre')?.hasError('required')">
+                  El nombre es obligatorio
+                </mat-error>
+                <mat-error *ngIf="clienteForm.get('nombre')?.hasError('minlength')">
+                  El nombre debe tener al menos 2 caracteres
+                </mat-error>
+              </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Apellido *</mat-label>
-              <input matInput formControlName="apellido" placeholder="Ingrese el apellido">
-              <mat-error *ngIf="clienteForm.get('apellido')?.hasError('required')">
-                {{ getErrorMessage('apellido') }}
-              </mat-error>
-              <mat-error *ngIf="clienteForm.get('apellido')?.hasError('minlength')">
-                {{ getErrorMessage('apellido') }}
-              </mat-error>
-            </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Apellido *</mat-label>
+                <input matInput formControlName="apellido" placeholder="Ingrese el apellido completo">
+                <mat-error *ngIf="clienteForm.get('apellido')?.hasError('required')">
+                  El apellido es obligatorio
+                </mat-error>
+                <mat-error *ngIf="clienteForm.get('apellido')?.hasError('minlength')">
+                  El apellido debe tener al menos 2 caracteres
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Documento</mat-label>
+                <input matInput formControlName="documento" placeholder="Cédula, DNI, Pasaporte, etc.">
+                <mat-error *ngIf="clienteForm.get('documento')?.hasError('minlength')">
+                  El documento debe tener al menos 5 caracteres
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Teléfono *</mat-label>
+                <input matInput formControlName="telefono" placeholder="Número de celular o teléfono">
+                <mat-error *ngIf="clienteForm.get('telefono')?.hasError('required')">
+                  El teléfono es obligatorio
+                </mat-error>
+                <mat-error *ngIf="clienteForm.get('telefono')?.hasError('pattern')">
+                  Ingrese un número de teléfono válido
+                </mat-error>
+              </mat-form-field>
+            </div>
           </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Documento *</mat-label>
-              <input matInput formControlName="documento" placeholder="Ingrese el documento">
-              <mat-error *ngIf="clienteForm.get('documento')?.hasError('required')">
-                {{ getErrorMessage('documento') }}
-              </mat-error>
-              <mat-error *ngIf="clienteForm.get('documento')?.hasError('minlength')">
-                {{ getErrorMessage('documento') }}
-              </mat-error>
-            </mat-form-field>
+          <!-- Información de Contacto -->
+          <div class="form-section">
+            <h3>
+              <mat-icon>contact_mail</mat-icon>
+              Información de Contacto
+            </h3>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput formControlName="email" placeholder="correo@ejemplo.com" type="email">
+                <mat-error *ngIf="clienteForm.get('email')?.hasError('email')">
+                  Ingrese un email válido
+                </mat-error>
+              </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Teléfono</mat-label>
-              <input matInput formControlName="telefono" placeholder="Ingrese el teléfono">
-              <mat-error *ngIf="clienteForm.get('telefono')?.hasError('pattern')">
-                {{ getErrorMessage('telefono') }}
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Email</mat-label>
-              <input matInput formControlName="email" placeholder="Ingrese el email" type="email">
-              <mat-error *ngIf="clienteForm.get('email')?.hasError('email')">
-                {{ getErrorMessage('email') }}
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Dirección</mat-label>
-              <textarea matInput formControlName="direccion" placeholder="Ingrese la dirección" rows="3"></textarea>
-            </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Dirección</mat-label>
+                <textarea matInput formControlName="direccion" placeholder="Dirección completa del cliente" rows="3"></textarea>
+              </mat-form-field>
+            </div>
           </div>
 
           <div class="form-actions">

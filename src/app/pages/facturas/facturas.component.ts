@@ -590,12 +590,24 @@ export class FacturasComponent implements OnInit, AfterViewInit {
   getErrorMessage(field: string): string {
     const control = this.facturaForm.get(field);
     if (control?.hasError('required')) {
-      return 'Este campo es requerido';
+      return 'Este campo es obligatorio';
     }
     if (control?.hasError('min')) {
-      return 'El valor debe ser mayor o igual a 0';
+      return 'El valor debe ser mayor a 0';
     }
-    return '';
+    return 'Campo inválido';
+  }
+
+  // Método para formatear fechas en formato dd/mm/aaaa
+  formatDate(date: Date | string | undefined): string {
+    if (!date) return '';
+    
+    const fecha = typeof date === 'string' ? new Date(date) : date;
+    return fecha.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   }
 
   getEstadoColor(estado: EstadoFactura): string {

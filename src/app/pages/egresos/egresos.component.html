@@ -1,10 +1,10 @@
-<div class="ingresos-container">
+<div class="egresos-container">
   <!-- Header simple y elegante -->
   <div class="header">
     <div class="header-content">
       <div class="title-section">
-        <h1>💰 Ingresos por Mantenimientos</h1>
-        <p>Resumen semanal de ingresos</p>
+        <h1>💸 Egresos del Taller</h1>
+        <p>Resumen semanal de gastos</p>
       </div>
       <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading" class="refresh-btn">
         <mat-icon>refresh</mat-icon>
@@ -23,7 +23,7 @@
   <div *ngIf="error && !loading" class="error-container">
     <mat-icon>error_outline</mat-icon>
     <h3>Error al cargar los datos</h3>
-    <p>No se pudieron cargar los datos de ingresos.</p>
+    <p>No se pudieron cargar los datos de egresos.</p>
     <button mat-raised-button color="primary" (click)="refreshData()">
       <mat-icon>refresh</mat-icon>
       Reintentar
@@ -42,39 +42,39 @@
       
       <div class="week-stats">
         <div class="stat-item">
-          <span class="stat-value">${{ semanaSeleccionada.totalIngresos | number:'1.0-0' }}</span>
-          <span class="stat-label">Ingresos</span>
+          <span class="stat-value">${{ semanaSeleccionada.totalEgresos | number:'1.0-0' }}</span>
+          <span class="stat-label">Egresos</span>
         </div>
         <div class="stat-item">
-          <span class="stat-value">{{ semanaSeleccionada.cantidadMantenimientos }}</span>
-          <span class="stat-label">Mantenimientos</span>
+          <span class="stat-value">{{ semanaSeleccionada.cantidadEgresos }}</span>
+          <span class="stat-label">Gastos</span>
         </div>
         <div class="stat-item">
-          <span class="stat-value">${{ semanaSeleccionada.promedioPorMantenimiento | number:'1.0-0' }}</span>
+          <span class="stat-value">${{ semanaSeleccionada.promedioPorEgreso | number:'1.0-0' }}</span>
           <span class="stat-label">Promedio</span>
         </div>
       </div>
 
-      <!-- Tabla de mantenimientos -->
+      <!-- Tabla de egresos -->
       <div class="table-container">
-        <h4>Mantenimientos de esta semana</h4>
-        <table class="maintenance-table">
+        <h4>Egresos de esta semana</h4>
+        <table class="egresos-table">
           <thead>
             <tr>
               <th>Fecha</th>
-              <th>Cliente</th>
-              <th>Vehículo</th>
-              <th>Mecánico</th>
+              <th>Concepto</th>
+              <th>Categoría</th>
+              <th>Responsable</th>
               <th>Monto</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let mantenimiento of mantenimientosFiltrados">
-              <td>{{ formatDate(mantenimiento.fecha) }}</td>
-              <td>{{ mantenimiento.cliente }}</td>
-              <td>{{ mantenimiento.vehiculo }}</td>
-              <td>{{ mantenimiento.mecanico }}</td>
-              <td class="amount">${{ mantenimiento.monto | number:'1.0-0' }}</td>
+            <tr *ngFor="let egreso of egresosFiltrados">
+              <td>{{ formatDate(egreso.fechaEgreso) }}</td>
+              <td>{{ egreso.concepto }}</td>
+              <td>{{ egreso.categoria }}</td>
+              <td>{{ egreso.responsable }}</td>
+              <td class="amount">${{ egreso.monto | number:'1.0-0' }}</td>
             </tr>
           </tbody>
         </table>
@@ -93,11 +93,11 @@
             <span class="week-dates">{{ getFormattedDateRange(semana.fechaInicio, semana.fechaFin) }}</span>
           </div>
           <div class="week-amount">
-            <span class="amount-value">${{ semana.totalIngresos | number:'1.0-0' }}</span>
-            <span class="maintenance-count">{{ semana.cantidadMantenimientos }} mantenimientos</span>
+            <span class="amount-value">${{ semana.totalEgresos | number:'1.0-0' }}</span>
+            <span class="egresos-count">{{ semana.cantidadEgresos }} egresos</span>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div> 
+</div>

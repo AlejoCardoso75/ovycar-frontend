@@ -15,8 +15,14 @@ export function AuthInterceptor(
   // Obtener el token del servicio de autenticación
   const token = authService.getToken();
   
-  // Si hay token, agregarlo al header Authorization
+  // Si hay token, verificar si está expirado
   if (token) {
+    if (authService.isTokenExpired()) {
+      authService.logout();
+      router.navigate(['/login']);
+      return next(request);
+    }
+    
     request = request.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -28,9 +34,8 @@ export function AuthInterceptor(
     catchError((error: HttpErrorResponse) => {
       // Si el error es 401 (Unauthorized), redirigir al login
       if (error.status === 401) {
-        authService.logout().subscribe(() => {
-          router.navigate(['/login']);
-        });
+        authService.logout();
+        router.navigate(['/login']);
       }
       return throwError(() => error);
     })

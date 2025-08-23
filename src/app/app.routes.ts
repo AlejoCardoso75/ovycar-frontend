@@ -2,62 +2,63 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: '/login',
-    pathMatch: 'full'
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) },
+  // { path: 'register', loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent) },
+  { 
+    path: 'dashboard', 
+    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'login',
-    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
+  { 
+    path: 'clientes', 
+    loadComponent: () => import('./pages/clientes/clientes.component').then(m => m.ClientesComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'dashboard',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  { 
+    path: 'vehiculos', 
+    loadComponent: () => import('./pages/vehiculos/vehiculos.component').then(m => m.VehiculosComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'clientes',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/clientes/clientes.component').then(m => m.ClientesComponent)
+  { 
+    path: 'mantenimientos', 
+    loadComponent: () => import('./pages/mantenimientos/mantenimientos.component').then(m => m.MantenimientosComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'vehiculos',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/vehiculos/vehiculos.component').then(m => m.VehiculosComponent)
+  { 
+    path: 'facturas', 
+    loadComponent: () => import('./pages/facturas/facturas.component').then(m => m.FacturasComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'mantenimientos',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/mantenimientos/mantenimientos.component').then(m => m.MantenimientosComponent)
+  { 
+    path: 'egresos', 
+    loadComponent: () => import('./pages/egresos/egresos.component').then(m => m.EgresosComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'productos',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/productos/productos.component').then(m => m.ProductosComponent)
+  { 
+    path: 'egresos-gestion', 
+    loadComponent: () => import('./pages/egresos/egresos-gestion.component').then(m => m.EgresosGestionComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'ingresos',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/ingresos/ingresos.component').then(m => m.IngresosComponent)
+  { 
+    path: 'ingresos', 
+    loadComponent: () => import('./pages/ingresos/ingresos.component').then(m => m.IngresosComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'egresos',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/egresos/egresos.component').then(m => m.EgresosComponent)
+  { 
+    path: 'productos', 
+    loadComponent: () => import('./pages/productos/productos.component').then(m => m.ProductosComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'egresos-gestion',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/egresos/egresos-gestion.component').then(m => m.EgresosGestionComponent)
+  { 
+    path: 'servicios', 
+    loadComponent: () => import('./pages/servicios/servicios.component').then(m => m.ServiciosComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'perfil',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/perfil/perfil.component').then(m => m.PerfilComponent)
+  { 
+    path: 'perfil', 
+    loadComponent: () => import('./pages/perfil/perfil.component').then(m => m.PerfilComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: '**',
-    redirectTo: '/login'
-  }
+  { path: '**', redirectTo: '/login' }
 ];

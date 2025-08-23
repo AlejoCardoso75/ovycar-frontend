@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { LoginRequest, AuthResponse, UserSession } from '../models/auth.model';
+import { LoginRequest, RegisterRequest, AuthResponse, UserSession } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -40,18 +40,23 @@ export class AuthService {
       );
   }
 
-  logout(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/logout`, {})
+  register(registerRequest: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, registerRequest)
       .pipe(
-        tap(() => {
-          this.clearUserSession();
+        tap((response: AuthResponse) => {
+          if (response.success && response.token) {
+            this.setUserSession(response);
+          }
         }),
-        catchError(error => {
-          console.error('Error en logout:', error);
-          this.clearUserSession();
-          return of({});
+        catchError((error) => {
+          console.error('Error en registro:', error);
+          return throwError(() => error);
         })
       );
+  }
+
+  logout(): void {
+    this.clearUserSession();
   }
 
   validateToken(): Observable<boolean> {
@@ -85,18 +90,39 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  private setUserSession(authResponse: AuthResponse): void {
-    const userSession: UserSession = {
-      token: authResponse.token,
-      username: authResponse.username,
-      nombre: authResponse.nombre,
-      apellido: authResponse.apellido,
-      rol: authResponse.rol,
-      isAuthenticated: true
-    };
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      return true;
+    }
 
-    this.currentUserSubject.next(userSession);
-    localStorage.setItem('currentUser', JSON.stringify(userSession));
+    try {
+      // Decodificar el token JWT (solo la parte del payload)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000; // Convertir a milisegundos
+      const currentTime = Date.now();
+      
+      return currentTime >= expirationTime;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return true;
+    }
+  }
+
+  private setUserSession(authResponse: AuthResponse): void {
+    if (authResponse.token && authResponse.username && authResponse.nombre && authResponse.apellido && authResponse.rol) {
+      const userSession: UserSession = {
+        token: authResponse.token,
+        username: authResponse.username,
+        nombre: authResponse.nombre,
+        apellido: authResponse.apellido,
+        rol: authResponse.rol,
+        isAuthenticated: true
+      };
+
+      this.currentUserSubject.next(userSession);
+      localStorage.setItem('currentUser', JSON.stringify(userSession));
+    }
   }
 
   private clearUserSession(): void {

@@ -13,6 +13,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
+import { InactivityService } from './services/inactivity.service';
 
 @Component({
   selector: 'app-root',
@@ -40,7 +41,8 @@ export class AppComponent {
     private breakpointObserver: BreakpointObserver,
     public authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private inactivityService: InactivityService
   ) {}
 
   get isHandset$() {
@@ -52,17 +54,9 @@ export class AppComponent {
   }
 
   logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.snackBar.open('Sesión cerrada exitosamente', 'Cerrar', { duration: 3000 });
-        this.router.navigate(['/login']);
-      },
-      error: (error) => {
-        console.error('Error en logout:', error);
-        this.snackBar.open('Error al cerrar sesión', 'Cerrar', { duration: 3000 });
-        // Redirigir de todas formas
-        this.router.navigate(['/login']);
-      }
-    });
+    this.inactivityService.clearTimer();
+    this.authService.logout();
+    this.snackBar.open('Sesión cerrada exitosamente', 'Cerrar', { duration: 3000 });
+    this.router.navigate(['/login']);
   }
 }

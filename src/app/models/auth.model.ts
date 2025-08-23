@@ -3,12 +3,21 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface AuthResponse {
-  token: string;
+export interface RegisterRequest {
   username: string;
+  password: string;
   nombre: string;
   apellido: string;
+  email: string;
   rol: string;
+}
+
+export interface AuthResponse {
+  token: string | null;
+  username: string | null;
+  nombre: string | null;
+  apellido: string | null;
+  rol: string | null;
   message: string;
   success: boolean;
 }

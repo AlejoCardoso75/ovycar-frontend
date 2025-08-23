@@ -157,7 +157,7 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
     }
     if (typeof clienteId === 'number') {
       const cliente = this.clientes.find(c => c.id === clienteId);
-      return cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}` : '';
+      return cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.telefono}` : '';
     }
     return '';
   }
@@ -187,7 +187,7 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
       
       this.vehiculoForm.patchValue({
         clienteId: vehiculo.clienteId,
-        clienteSearch: cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}` : '',
+        clienteSearch: cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.telefono}` : '',
         placa: vehiculo.placa,
         marca: vehiculo.marca,
         modelo: vehiculo.modelo,

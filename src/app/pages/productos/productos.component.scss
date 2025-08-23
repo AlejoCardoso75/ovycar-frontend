@@ -75,6 +75,33 @@
   flex-wrap: wrap;
 }
 
+// Estilos para los botones de PDF y Excel
+.pdf-button {
+  background-color: #dc3545 !important;
+  color: white !important;
+  
+  &:hover {
+    background-color: #c82333 !important;
+  }
+  
+  mat-icon {
+    color: white !important;
+  }
+}
+
+.excel-button {
+  background-color: #28a745 !important;
+  color: white !important;
+  
+  &:hover {
+    background-color: #218838 !important;
+  }
+  
+  mat-icon {
+    color: white !important;
+  }
+}
+
 .content {
   background: white;
   border-radius: 12px;

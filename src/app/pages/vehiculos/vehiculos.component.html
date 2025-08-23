@@ -21,7 +21,7 @@
         <div class="actions-section">
           <button mat-raised-button color="primary" (click)="openDialog()">
             <mat-icon>add</mat-icon>
-            Nuevo Vehículo
+               Nuevo Vehículo
           </button>
         </div>
       </div>
@@ -125,13 +125,13 @@
                <mat-label>Buscar Cliente *</mat-label>
                <input matInput 
                       formControlName="clienteSearch" 
-                      placeholder="Buscar por nombre, apellido o documento"
+                      placeholder="Buscar por nombre, apellido o teléfono"
                       [matAutocomplete]="auto">
                                <mat-autocomplete #auto="matAutocomplete" 
                                  (optionSelected)="onClienteSelected($event.option.value)"
                                  [displayWith]="displayClienteFn">
                   <mat-option *ngFor="let cliente of filteredClientes | async" [value]="cliente.id">
-                    {{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.documento }}
+                    {{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.telefono }}
                   </mat-option>
                 </mat-autocomplete>
                <mat-error *ngIf="vehiculoForm.get('clienteSearch')?.hasError('required')">

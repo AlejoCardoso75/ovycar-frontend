@@ -29,6 +29,7 @@ import { Mantenimiento, MantenimientoDTO, EstadoMantenimiento } from '../../mode
 import { ClienteDTO } from '../../models/cliente.model';
 import { VehiculoDTO } from '../../models/vehiculo.model';
 import { DeleteInfo, FacturaInfo } from '../../models/delete-info.model';
+import { NumberFormatDirective } from '../../directives/number-format.directive';
 
 @Component({
   selector: 'app-mantenimientos',
@@ -54,7 +55,8 @@ import { DeleteInfo, FacturaInfo } from '../../models/delete-info.model';
     MatDialogModule,
     MatAutocompleteModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NumberFormatDirective
   ],
   templateUrl: './mantenimientos.component.html',
   styleUrls: ['./mantenimientos.component.scss']
@@ -136,7 +138,9 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
       kilometrajeActual: ['', [Validators.min(0)]],
       observaciones: [''],
       costo: ['', [Validators.min(0)]],
-      mecanico: ['', [Validators.required]]
+      mecanico: ['', [Validators.required]],
+      proveedorRepuestos: ['', [Validators.required]],
+      garantia: ['Sin garantía']
     });
   }
 
@@ -187,11 +191,61 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     const vehiculo = this.vehiculos.find(v => v.id === vehiculoId);
     if (vehiculo) {
       this.selectedVehiculo = vehiculo;
+      const kilometrajeFormateado = (vehiculo.kilometraje || 0).toLocaleString('en-US');
       this.mantenimientoForm.patchValue({
         vehiculoId: vehiculo.id,
-        vehiculoSearch: `${vehiculo.placa} - ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.clienteNombre})`
+        vehiculoSearch: `${vehiculo.placa} - ${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.clienteNombre})`,
+        kilometrajeActual: vehiculo.kilometraje || 0
       });
+      
+      // Formatear el kilometraje en el campo de solo lectura
+      setTimeout(() => {
+        const kilometrajeInput = document.querySelector('input[formControlName="kilometrajeActual"]') as HTMLInputElement;
+        if (kilometrajeInput) {
+          kilometrajeInput.value = kilometrajeFormateado;
+        }
+      }, 0);
     }
+  }
+
+  onProveedorRepuestosChange(event: any): void {
+    const proveedor = event.value;
+    const fechaProgramada = this.mantenimientoForm.get('fechaProgramada')?.value;
+    
+    if (proveedor === 'cliente') {
+      // Si el cliente proporciona los repuestos, no hay garantía
+      this.mantenimientoForm.patchValue({
+        garantia: 'Sin garantía'
+      });
+    } else if (proveedor === 'taller' && fechaProgramada) {
+      // Si el taller proporciona los repuestos, calcular 3 meses después de la fecha programada
+      this.calcularGarantia(fechaProgramada);
+    }
+  }
+
+  onFechaProgramadaChange(event: any): void {
+    const fechaProgramada = event.value;
+    const proveedor = this.mantenimientoForm.get('proveedorRepuestos')?.value;
+    
+    // Solo recalcular garantía si el taller proporciona los repuestos
+    if (proveedor === 'taller' && fechaProgramada) {
+      this.calcularGarantia(fechaProgramada);
+    }
+  }
+
+  private calcularGarantia(fechaProgramada: string): void {
+    const fechaGarantia = new Date(fechaProgramada);
+    fechaGarantia.setMonth(fechaGarantia.getMonth() + 3);
+    
+    const fechaGarantiaFormateada = fechaGarantia.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    this.mantenimientoForm.patchValue({
+      garantia: `Garantía hasta ${fechaGarantiaFormateada}`
+    });
   }
 
   displayVehiculoFn = (vehiculoId: number | string): string => {
@@ -286,8 +340,19 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
         kilometrajeActual: mantenimiento.kilometrajeActual,
         observaciones: mantenimiento.observaciones || '',
         costo: mantenimiento.costo,
-        mecanico: mantenimiento.mecanico || ''
+        mecanico: mantenimiento.mecanico || '',
+        proveedorRepuestos: mantenimiento.proveedorRepuestos || 'taller',
+        garantia: mantenimiento.garantia || 'Sin garantía'
       });
+      
+      // Formatear el kilometraje en el campo de solo lectura
+      setTimeout(() => {
+        const kilometrajeInput = document.querySelector('input[formControlName="kilometrajeActual"]') as HTMLInputElement;
+        if (kilometrajeInput) {
+          const kilometrajeFormateado = (mantenimiento.kilometrajeActual || 0).toLocaleString('en-US');
+          kilometrajeInput.value = kilometrajeFormateado;
+        }
+      }, 0);
     } else {
       this.selectedVehiculo = null;
       this.mantenimientoForm.reset({ 
@@ -313,7 +378,9 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           kilometrajeActual: mantenimientoData.kilometrajeActual,
           observaciones: mantenimientoData.observaciones,
           costo: mantenimientoData.costo,
-          mecanico: mantenimientoData.mecanico
+          mecanico: mantenimientoData.mecanico,
+          proveedorRepuestos: mantenimientoData.proveedorRepuestos,
+          garantia: mantenimientoData.garantia
         };
         
         this.mantenimientoService.updateMantenimiento(this.selectedMantenimiento.id, mantenimientoToUpdate).subscribe({
@@ -338,7 +405,9 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           kilometrajeActual: mantenimientoData.kilometrajeActual,
           observaciones: mantenimientoData.observaciones,
           costo: mantenimientoData.costo,
-          mecanico: mantenimientoData.mecanico
+          mecanico: mantenimientoData.mecanico,
+          proveedorRepuestos: mantenimientoData.proveedorRepuestos,
+          garantia: mantenimientoData.garantia
         };
         
         this.mantenimientoService.createMantenimiento(mantenimientoToCreate).subscribe({

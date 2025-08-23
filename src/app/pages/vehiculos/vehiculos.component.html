@@ -210,7 +210,10 @@
           <div class="form-row">
             <mat-form-field appearance="outline">
               <mat-label>Kilometraje *</mat-label>
-              <input matInput formControlName="kilometraje" placeholder="Ingrese el kilometraje" type="number">
+              <input matInput 
+                     formControlName="kilometraje" 
+                     placeholder="Ingrese el kilometraje"
+                     (input)="formatKilometraje($event)">
               <mat-error *ngIf="vehiculoForm.get('kilometraje')?.hasError('required')">
                 {{ getErrorMessage('kilometraje') }}
               </mat-error>

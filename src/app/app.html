@@ -1,12 +1,15 @@
-<mat-sidenav-container class="sidenav-container">
-  <!-- Sidebar -->
+<!-- Mostrar solo el router-outlet si no está autenticado (para login) -->
+<div *ngIf="!authService.isAuthenticated()" class="full-screen">
+  <router-outlet></router-outlet>
+</div>
+
+<!-- Mostrar el layout completo con sidebar si está autenticado -->
+<mat-sidenav-container class="sidenav-container" *ngIf="authService.isAuthenticated()">
   <mat-sidenav #drawer class="sidenav" fixedInViewport
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="(isHandset$ | async) ? 'over' : 'side'"
       [opened]="(isHandset$ | async) === false">
-    
-    <mat-toolbar>Menú</mat-toolbar>
-    
+    <mat-toolbar>Menu</mat-toolbar>
     <mat-nav-list>
       <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
         <mat-icon matListItemIcon>dashboard</mat-icon>
@@ -23,20 +26,15 @@
         <span matListItemTitle>Vehículos</span>
       </a>
       
-      <a mat-list-item routerLink="/productos" routerLinkActive="active">
-        <mat-icon matListItemIcon>inventory</mat-icon>
-        <span matListItemTitle>Productos</span>
-      </a>
-      
       <a mat-list-item routerLink="/mantenimientos" routerLinkActive="active">
         <mat-icon matListItemIcon>build</mat-icon>
         <span matListItemTitle>Mantenimientos</span>
       </a>
       
-      <!-- <a mat-list-item routerLink="/facturas" routerLinkActive="active">
-        <mat-icon matListItemIcon>receipt</mat-icon>
-        <span matListItemTitle>Facturas</span>
-      </a> -->
+      <a mat-list-item routerLink="/productos" routerLinkActive="active">
+        <mat-icon matListItemIcon>inventory</mat-icon>
+        <span matListItemTitle>Productos</span>
+      </a>
       
       <a mat-list-item routerLink="/ingresos" routerLinkActive="active">
         <mat-icon matListItemIcon>trending_up</mat-icon>
@@ -55,13 +53,11 @@
       
       <a mat-list-item routerLink="/perfil" routerLinkActive="active">
         <mat-icon matListItemIcon>person</mat-icon>
-        <span matListItemTitle>Datos del Usuario</span>
+        <span matListItemTitle>Perfil</span>
       </a>
     </mat-nav-list>
   </mat-sidenav>
-  
-  <!-- Main content -->
-  <mat-sidenav-content>
+  <mat-sidenav-content class="sidenav-content">
     <mat-toolbar color="primary">
       <button
         type="button"
@@ -71,31 +67,20 @@
         *ngIf="isHandset$ | async">
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
+      <span class="app-title">Talleres Oviedo - Sistema de Gestión</span>
       
-      <span class="app-title">OvyCar - Sistema de Gestión</span>
-      
-      <span class="spacer"></span>
-      
-      <button mat-icon-button [matMenuTriggerFor]="menu">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-      <mat-menu #menu="matMenu">
-        <button mat-menu-item>
-          <mat-icon>person</mat-icon>
-          <span>Perfil</span>
+      <!-- User info and logout button -->
+      <div class="user-section">
+        <span class="user-info">
+          <mat-icon>account_circle</mat-icon>
+          {{ authService.getCurrentUser()?.nombre }} {{ authService.getCurrentUser()?.apellido }}
+        </span>
+        <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión">
+          <mat-icon>logout</mat-icon>
         </button>
-        <button mat-menu-item>
-          <mat-icon>settings</mat-icon>
-          <span>Configuración</span>
-        </button>
-        <button mat-menu-item>
-          <mat-icon>exit_to_app</mat-icon>
-          <span>Cerrar Sesión</span>
-        </button>
-      </mat-menu>
+      </div>
     </mat-toolbar>
-    
-  <div class="content">
+    <div class="content">
       <router-outlet></router-outlet>
     </div>
   </mat-sidenav-content>

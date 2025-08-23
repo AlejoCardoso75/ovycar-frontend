@@ -32,6 +32,7 @@ import { ClienteDTO } from '../../models/cliente.model';
 import { MantenimientoDTO } from '../../models/mantenimiento.model';
 import { ProductoDTO } from '../../models/producto.model';
 import { ServicioDTO } from '../../models/servicio.model';
+import { NumberFormatDirective } from '../../directives/number-format.directive';
 
 @Component({
   selector: 'app-facturas',
@@ -58,7 +59,8 @@ import { ServicioDTO } from '../../models/servicio.model';
     MatDividerModule,
     MatAutocompleteModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NumberFormatDirective
   ],
   templateUrl: './facturas.component.html',
   styleUrls: ['./facturas.component.scss']

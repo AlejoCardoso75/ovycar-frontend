@@ -85,6 +85,30 @@
   flex: 1;
 }
 
+.no-data-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #666;
+  
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: #ff9800;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

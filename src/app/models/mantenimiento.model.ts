@@ -18,6 +18,8 @@ export interface Mantenimiento {
   observaciones?: string;
   costo?: number;
   mecanico?: string;
+  proveedorRepuestos?: string;
+  garantia?: string;
 }
 
 export interface MantenimientoDTO {
@@ -38,5 +40,7 @@ export interface MantenimientoDTO {
   observaciones?: string;
   costo?: number;
   mecanico?: string;
+  proveedorRepuestos?: string;
+  garantia?: string;
   fechaRegistro: string;
 } 

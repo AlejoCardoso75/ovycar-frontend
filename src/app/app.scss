@@ -1,3 +1,10 @@
+/* Full screen layout for login */
+.full-screen {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
 .sidenav-container {
   height: 100vh;
 }
@@ -40,6 +47,28 @@
   padding: 0;
   background-color: #fafafa;
   min-height: calc(100vh - 64px);
+}
+
+/* User section styling */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: white;
+}
+
+.user-info mat-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 /* Navigation list styling */
@@ -133,5 +162,15 @@
   
   .mat-nav-list span {
     font-size: 0.9rem;
+  }
+  
+  .user-info {
+    font-size: 0.8rem;
+  }
+  
+  .user-info mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
   }
 }

@@ -9,6 +9,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Producto, ProductoDTO } from '../../models/producto.model';
+import { NumberFormatDirective } from '../../directives/number-format.directive';
 
 @Component({
   selector: 'app-producto-dialog',
@@ -23,7 +24,8 @@ import { Producto, ProductoDTO } from '../../models/producto.model';
     MatCheckboxModule,
     MatIconModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NumberFormatDirective
   ],
   template: `
     <div class="dialog-overlay">
@@ -77,7 +79,13 @@ import { Producto, ProductoDTO } from '../../models/producto.model';
               
               <mat-form-field appearance="outline">
                 <mat-label>Precio</mat-label>
-                <input matInput type="number" formControlName="precioVenta" placeholder="Precio del producto">
+                <input matInput 
+                       formControlName="precioVenta" 
+                       placeholder="Precio del producto"
+                       appNumberFormat="currency"
+                       [decimalPlaces]="0"
+                       [thousandSeparator]="','"
+                       [decimalSeparator]="'.'">
                 <mat-error *ngIf="productoForm.get('precioVenta')?.hasError('required')">
                   El precio es requerido
                 </mat-error>
@@ -88,7 +96,13 @@ import { Producto, ProductoDTO } from '../../models/producto.model';
               
               <mat-form-field appearance="outline">
                 <mat-label>Stock</mat-label>
-                <input matInput type="number" formControlName="stock" placeholder="Cantidad en stock">
+                <input matInput 
+                       formControlName="stock" 
+                       placeholder="Cantidad en stock"
+                       appNumberFormat="number"
+                       [decimalPlaces]="0"
+                       [thousandSeparator]="','"
+                       [decimalSeparator]="'.'">
                 <mat-error *ngIf="productoForm.get('stock')?.hasError('required')">
                   El stock es requerido
                 </mat-error>

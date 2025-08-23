@@ -2,17 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../services/auth.service';
+import { UserSession } from '../../models/auth.model';
 
 interface UserData {
   nombre: string;
   apellido: string;
-  email: string;
-  telefono: string;
-  cargo: string;
-  departamento: string;
+  username: string;
   rol: string;
-  fechaRegistro: Date;
-  ultimoAcceso: Date;
+  fechaRegistro?: Date;
+  ultimoAcceso?: Date;
 }
 
 interface UserStats {
@@ -35,28 +34,52 @@ interface UserStats {
 })
 export class PerfilComponent implements OnInit {
   userData: UserData = {
-    nombre: 'Juan Carlos',
-    apellido: 'Pérez',
-    email: 'juan.perez@ovycar.com',
-    telefono: '+57 300 123 4567',
-    cargo: 'Administrador del Sistema',
-    departamento: 'Tecnología',
-    rol: 'Administrador',
-    fechaRegistro: new Date('2024-01-15'),
-    ultimoAcceso: new Date()
+    nombre: '',
+    apellido: '',
+    username: '',
+    rol: '',
+    fechaRegistro: undefined,
+    ultimoAcceso: undefined
   };
 
   userStats: UserStats = {
-    totalSesiones: 156,
-    diasActivo: 45,
-    tiempoPromedio: '2h 30m',
-    accionesRealizadas: 1247
+    totalSesiones: 0,
+    diasActivo: 0,
+    tiempoPromedio: '0h 0m',
+    accionesRealizadas: 0
   };
 
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    // Los datos ya están cargados en las propiedades
+    this.loadUserData();
+    
+    // Suscribirse a cambios del usuario
+    this.authService.currentUser$.subscribe(user => {
+      console.log('User changed:', user);
+      if (user) {
+        this.loadUserData();
+      }
+    });
+  }
+
+  loadUserData(): void {
+    const currentUser = this.authService.getCurrentUser();
+    console.log('Current user from AuthService:', currentUser);
+    
+    if (currentUser) {
+      this.userData = {
+        nombre: currentUser.nombre,
+        apellido: currentUser.apellido,
+        username: currentUser.username,
+        rol: currentUser.rol,
+        fechaRegistro: new Date(), // Por ahora usamos la fecha actual
+        ultimoAcceso: new Date() // Por ahora usamos la fecha actual
+      };
+      console.log('User data loaded:', this.userData);
+    } else {
+      console.log('No current user found');
+    }
   }
 
   logout(): void {

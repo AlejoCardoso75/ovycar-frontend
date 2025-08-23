@@ -385,7 +385,14 @@
                 <div class="form-row">
                   <mat-form-field appearance="outline">
                     <mat-label>Cantidad *</mat-label>
-                    <input matInput formControlName="cantidad" type="number" min="1" (input)="calcularSubtotalDetalle(i)">
+                    <input matInput 
+                           formControlName="cantidad" 
+                           min="1" 
+                           (input)="calcularSubtotalDetalle(i)"
+                           appNumberFormat="number"
+                           [decimalPlaces]="0"
+                           [thousandSeparator]="','"
+                           [decimalSeparator]="'.'">
                     <mat-error *ngIf="detalle.get('cantidad')?.hasError('required')">
                       Este campo es requerido
                     </mat-error>
@@ -393,7 +400,14 @@
 
                   <mat-form-field appearance="outline">
                     <mat-label>Precio Unitario *</mat-label>
-                    <input matInput formControlName="precioUnitario" type="number" min="0" (input)="calcularSubtotalDetalle(i)">
+                    <input matInput 
+                           formControlName="precioUnitario" 
+                           min="0" 
+                           (input)="calcularSubtotalDetalle(i)"
+                           appNumberFormat="currency"
+                           [decimalPlaces]="0"
+                           [thousandSeparator]="','"
+                           [decimalSeparator]="'.'">
                     <mat-error *ngIf="detalle.get('precioUnitario')?.hasError('required')">
                       Este campo es requerido
                     </mat-error>
@@ -432,7 +446,14 @@
 
               <mat-form-field appearance="outline">
                 <mat-label>Impuestos</mat-label>
-                <input matInput formControlName="impuestos" type="number" min="0" (input)="calcularTotales()">
+                <input matInput 
+                       formControlName="impuestos" 
+                       min="0" 
+                       (input)="calcularTotales()"
+                       appNumberFormat="currency"
+                       [decimalPlaces]="0"
+                       [thousandSeparator]="','"
+                       [decimalSeparator]="'.'">
                 <mat-error *ngIf="facturaForm.get('impuestos')?.hasError('min')">
                   {{ getErrorMessage('impuestos') }}
                 </mat-error>
@@ -440,7 +461,14 @@
 
               <mat-form-field appearance="outline">
                 <mat-label>Descuento</mat-label>
-                <input matInput formControlName="descuento" type="number" min="0" (input)="calcularTotales()">
+                <input matInput 
+                       formControlName="descuento" 
+                       min="0" 
+                       (input)="calcularTotales()"
+                       appNumberFormat="currency"
+                       [decimalPlaces]="0"
+                       [thousandSeparator]="','"
+                       [decimalSeparator]="'.'">
                 <mat-error *ngIf="facturaForm.get('descuento')?.hasError('min')">
                   {{ getErrorMessage('descuento') }}
                 </mat-error>

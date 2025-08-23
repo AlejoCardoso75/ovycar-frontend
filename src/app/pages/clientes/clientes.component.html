@@ -107,9 +107,12 @@
         <mat-card-subtitle>
           Complete la información del cliente. Los campos marcados con * son obligatorios.
         </mat-card-subtitle>
+        <button mat-icon-button class="close-button" (click)="closeDialog()">
+          <mat-icon>close</mat-icon>
+        </button>
       </mat-card-header>
       
-      <mat-card-content>
+      <mat-card-content class="dialog-content">
         <form [formGroup]="clienteForm" (ngSubmit)="saveCliente()">
           <!-- Información Personal -->
           <div class="form-section">
@@ -184,7 +187,7 @@
             <div class="form-row">
               <mat-form-field appearance="outline">
                 <mat-label>Dirección</mat-label>
-                <textarea matInput formControlName="direccion" placeholder="Dirección completa del cliente" rows="3"></textarea>
+                <textarea matInput formControlName="direccion" placeholder="Dirección completa del cliente" rows="4"></textarea>
               </mat-form-field>
             </div>
           </div>

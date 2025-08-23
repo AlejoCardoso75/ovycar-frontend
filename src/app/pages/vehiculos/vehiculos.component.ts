@@ -290,4 +290,24 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
     const cliente = this.clientes.find(c => c.id === clienteId);
     return cliente ? `${cliente.nombre} ${cliente.apellido}` : 'Cliente no encontrado';
   }
+
+  formatKilometraje(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+    
+    // Remover todos los caracteres no numéricos
+    value = value.replace(/[^\d]/g, '');
+    
+    // Convertir a número
+    const numValue = parseInt(value) || 0;
+    
+    // Formatear con separadores de miles
+    const formatted = numValue.toLocaleString('en-US');
+    
+    // Actualizar el input
+    input.value = formatted;
+    
+    // Actualizar el control del formulario
+    this.vehiculoForm.get('kilometraje')?.setValue(numValue, { emitEvent: false });
+  }
 }

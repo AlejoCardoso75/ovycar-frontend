@@ -20,6 +20,7 @@ import { Egreso, EgresoDTO, CreateEgresoDTO } from '../../models/egreso.model';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { catchError, of } from 'rxjs';
+import { NumberFormatDirective } from '../../directives/number-format.directive';
 
 @Component({
   selector: 'app-egresos-gestion',
@@ -43,7 +44,8 @@ import { catchError, of } from 'rxjs';
     FormsModule,
     ReactiveFormsModule,
     MatMenuModule,
-    MatDialogModule
+    MatDialogModule,
+    NumberFormatDirective
   ],
   templateUrl: './egresos-gestion.component.html',
   styleUrls: ['./egresos-gestion.component.scss']

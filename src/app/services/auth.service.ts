@@ -56,7 +56,10 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('Ejecutando logout...');
     this.clearUserSession();
+    // Forzar recarga de la página para limpiar completamente el estado
+    window.location.href = '/login';
   }
 
   validateToken(): Observable<boolean> {
@@ -107,6 +110,40 @@ export class AuthService {
       console.error('Error decoding token:', error);
       return true;
     }
+  }
+
+  isTokenInactive(): boolean {
+    // La inactividad se maneja en el InactivityService, no aquí
+    // Este método siempre retorna false para que no interfiera con la validación del token
+    return false;
+  }
+
+  isTokenValid(): boolean {
+    // Solo verificar que no haya expirado
+    return !this.isTokenExpired();
+  }
+
+  // Método para extender la sesión (renovar el token)
+  extendSession(): Observable<boolean> {
+    const token = this.getToken();
+    if (!token) {
+      return of(false);
+    }
+
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/extend`, {}, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).pipe(
+      map(response => {
+        if (response.success && response.token) {
+          this.setUserSession(response);
+          return true;
+        }
+        return false;
+      }),
+      catchError(() => {
+        return of(false);
+      })
+    );
   }
 
   private setUserSession(authResponse: AuthResponse): void {

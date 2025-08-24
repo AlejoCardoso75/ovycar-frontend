@@ -1,0 +1,26 @@
+<div class="session-warning-modal">
+  <div class="modal-header">
+    <mat-icon class="warning-icon">warning</mat-icon>
+    <h2>Advertencia de Sesión</h2>
+  </div>
+
+  <div class="modal-content">
+    <p>Su sesión expirará en <strong>{{ countdown }}</strong> segundos por inactividad.</p>
+    <p>¿Desea extender su sesión para continuar trabajando?</p>
+  </div>
+
+  <div class="modal-actions">
+    <button mat-raised-button color="primary" (click)="onExtendSession()">
+      <mat-icon>refresh</mat-icon>
+      Extender Sesión
+    </button>
+    <button mat-button color="warn" (click)="onLogout()">
+      <mat-icon>logout</mat-icon>
+      Cerrar Sesión
+    </button>
+  </div>
+
+  <div class="countdown-bar">
+    <div class="countdown-progress" [style.width.%]="(countdown / 60) * 100"></div>
+  </div>
+</div>

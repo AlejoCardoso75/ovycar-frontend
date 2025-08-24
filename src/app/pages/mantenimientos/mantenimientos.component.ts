@@ -97,6 +97,12 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   mantenimientosEnProceso: MantenimientoDTO[] = [];
   mantenimientosCompletados: MantenimientoDTO[] = [];
   mantenimientosCancelados: MantenimientoDTO[] = [];
+  
+  // Mantenimientos filtrados por búsqueda
+  mantenimientosProgramadosFiltrados: MantenimientoDTO[] = [];
+  mantenimientosEnProcesoFiltrados: MantenimientoDTO[] = [];
+  mantenimientosCompletadosFiltrados: MantenimientoDTO[] = [];
+  mantenimientosCanceladosFiltrados: MantenimientoDTO[] = [];
 
   // Estadísticas
   estadisticas = {
@@ -120,6 +126,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.loadMantenimientos();
     this.loadVehiculos();
+    // Inicializar las listas filtradas
+    this.aplicarFiltroBusqueda();
   }
 
   ngAfterViewInit(): void {
@@ -264,6 +272,9 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     this.mantenimientosEnProceso = mantenimientos.filter(m => m.estado === EstadoMantenimiento.EN_PROCESO);
     this.mantenimientosCompletados = mantenimientos.filter(m => m.estado === EstadoMantenimiento.COMPLETADO);
     this.mantenimientosCancelados = mantenimientos.filter(m => m.estado === EstadoMantenimiento.CANCELADO);
+    
+    // Aplicar filtro de búsqueda a todas las categorías
+    this.aplicarFiltroBusqueda();
   }
 
   calcularEstadisticas(mantenimientos: MantenimientoDTO[]): void {
@@ -307,17 +318,35 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     // No necesitamos lógica adicional aquí
   }
 
-  applyFilter(): void {
-    this.dataSource.filterPredicate = (data: MantenimientoDTO, filter: string) => {
-      const searchTerm = filter.toLowerCase();
-      return data.vehiculoPlaca.toLowerCase().includes(searchTerm) ||
-             data.vehiculoMarca.toLowerCase().includes(searchTerm) ||
-             data.clienteNombre.toLowerCase().includes(searchTerm) ||
-             data.tipoMantenimiento.toLowerCase().includes(searchTerm) ||
-             data.estado.toLowerCase().includes(searchTerm);
+  aplicarFiltroBusqueda(): void {
+    const searchTerm = this.searchTerm.toLowerCase().trim();
+    
+    // Función para verificar si un mantenimiento coincide con el filtro
+    const coincideConFiltro = (mantenimiento: MantenimientoDTO): boolean => {
+      if (!searchTerm) return true;
+      
+      return mantenimiento.vehiculoPlaca.toLowerCase().includes(searchTerm) ||
+             mantenimiento.vehiculoMarca.toLowerCase().includes(searchTerm) ||
+             mantenimiento.clienteNombre.toLowerCase().includes(searchTerm) ||
+             mantenimiento.tipoMantenimiento.toLowerCase().includes(searchTerm) ||
+             mantenimiento.estado.toLowerCase().includes(searchTerm) ||
+             (mantenimiento.mecanico ? mantenimiento.mecanico.toLowerCase().includes(searchTerm) : false);
     };
     
-    this.dataSource.filter = this.searchTerm.trim();
+    // Aplicar filtro a cada categoría
+    this.mantenimientosProgramadosFiltrados = this.mantenimientosProgramados.filter(coincideConFiltro);
+    this.mantenimientosEnProcesoFiltrados = this.mantenimientosEnProceso.filter(coincideConFiltro);
+    this.mantenimientosCompletadosFiltrados = this.mantenimientosCompletados.filter(coincideConFiltro);
+    this.mantenimientosCanceladosFiltrados = this.mantenimientosCancelados.filter(coincideConFiltro);
+  }
+
+  applyFilter(): void {
+    this.aplicarFiltroBusqueda();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.aplicarFiltroBusqueda();
   }
 
   openDialog(mantenimiento?: MantenimientoDTO): void {

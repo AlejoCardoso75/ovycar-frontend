@@ -43,7 +43,27 @@ export class AppComponent {
     private router: Router,
     private snackBar: MatSnackBar,
     private inactivityService: InactivityService
-  ) {}
+  ) {
+    // Verificar autenticación al inicializar
+    this.checkAuthentication();
+  }
+
+  private checkAuthentication(): void {
+    // Si no está autenticado y no está en login, redirigir
+    if (!this.authService.isAuthenticated() && this.router.url !== '/login') {
+      this.router.navigate(['/login']);
+    }
+    
+    // Verificar autenticación cada 30 segundos si está autenticado
+    if (this.authService.isAuthenticated()) {
+      setInterval(() => {
+        if (!this.authService.isTokenValid()) {
+          console.log('Token expirado, cerrando sesión...');
+          this.authService.logout();
+        }
+      }, 30000); // 30 segundos
+    }
+  }
 
   get isHandset$() {
     return this.breakpointObserver.observe(Breakpoints.Handset)

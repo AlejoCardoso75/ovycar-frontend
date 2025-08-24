@@ -127,10 +127,14 @@
                       formControlName="clienteSearch" 
                       placeholder="Buscar por nombre, apellido o teléfono"
                       [matAutocomplete]="auto">
+               <mat-icon matSuffix>search</mat-icon>
+               <button mat-icon-button matSuffix *ngIf="vehiculoForm.get('clienteSearch')?.value" (click)="clearClienteSearch()" matTooltip="Limpiar búsqueda">
+                 <mat-icon>clear</mat-icon>
+               </button>
                                <mat-autocomplete #auto="matAutocomplete" 
-                                 (optionSelected)="onClienteSelected($event.option.value)"
-                                 [displayWith]="displayClienteFn">
-                  <mat-option *ngFor="let cliente of filteredClientes | async" [value]="cliente.id">
+                                  (optionSelected)="onClienteSelected($event.option.value)"
+                                  [displayWith]="displayClienteFn">
+                  <mat-option *ngFor="let cliente of filteredClientes | async" [value]="cliente">
                     {{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.telefono }}
                   </mat-option>
                 </mat-autocomplete>

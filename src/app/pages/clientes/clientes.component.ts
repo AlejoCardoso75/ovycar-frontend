@@ -69,6 +69,22 @@ export class ClientesComponent implements OnInit, AfterViewInit {
     // Conectar el paginador y ordenamiento con la tabla
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    
+    // Configurar el filtro personalizado
+    this.dataSource.filterPredicate = (data: ClienteDTO, filter: string) => {
+      const searchTerm = filter.toLowerCase();
+      const nombre = data.nombre ? data.nombre.toLowerCase() : '';
+      const apellido = data.apellido ? data.apellido.toLowerCase() : '';
+      const documento = data.documento ? data.documento.toLowerCase() : '';
+      const email = data.email ? data.email.toLowerCase() : '';
+      const telefono = data.telefono ? data.telefono.toLowerCase() : '';
+      
+      return nombre.includes(searchTerm) ||
+             apellido.includes(searchTerm) ||
+             documento.includes(searchTerm) ||
+             email.includes(searchTerm) ||
+             telefono.includes(searchTerm);
+    };
   }
 
   initForm(): void {
@@ -87,6 +103,7 @@ export class ClientesComponent implements OnInit, AfterViewInit {
     this.clienteService.getAllClientes().subscribe({
       next: (clientes) => {
         this.dataSource.data = clientes;
+        console.log('Clientes cargados:', clientes.length);
       },
       error: (error) => {
         console.error('Error cargando clientes:', error);
@@ -95,17 +112,15 @@ export class ClientesComponent implements OnInit, AfterViewInit {
     });
   }
 
+
+
   applyFilter(): void {
-    // Aplicar filtro personalizado
-    this.dataSource.filterPredicate = (data: ClienteDTO, filter: string) => {
-      const searchTerm = filter.toLowerCase();
-      return data.nombre.toLowerCase().includes(searchTerm) ||
-             data.apellido.toLowerCase().includes(searchTerm) ||
-             data.documento.includes(searchTerm) ||
-             (data.email ? data.email.toLowerCase().includes(searchTerm) : false);
-    };
-    
     this.dataSource.filter = this.searchTerm.trim();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.dataSource.filter = '';
   }
 
   openDialog(cliente?: ClienteDTO): void {

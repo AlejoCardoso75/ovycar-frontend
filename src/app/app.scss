@@ -9,6 +9,11 @@
   height: 100vh;
 }
 
+/* Layout para rutas no autenticadas */
+.sidenav-container:not(.authenticated) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 .sidenav {
   width: 260px;
   background: white;

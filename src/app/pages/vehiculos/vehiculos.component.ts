@@ -114,6 +114,7 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
   loadClientes(): void {
     this.clienteService.getAllClientes().subscribe({
       next: (clientes) => {
+        console.log('Clientes cargados:', clientes);
         this.clientes = clientes;
         this.setupClienteFilter();
       },
@@ -131,35 +132,45 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private _filterClientes(value: string): ClienteDTO[] {
-    const filterValue = value.toLowerCase();
-    return this.clientes.filter(cliente => 
-      cliente.nombre.toLowerCase().includes(filterValue) ||
-      cliente.apellido.toLowerCase().includes(filterValue) ||
-      cliente.documento.toLowerCase().includes(filterValue)
-    );
+  clearClienteSearch(): void {
+    this.vehiculoForm.patchValue({
+      clienteSearch: '',
+      clienteId: ''
+    });
+    this.selectedCliente = null;
   }
 
-  onClienteSelected(clienteId: number): void {
-    const cliente = this.clientes.find(c => c.id === clienteId);
+  private _filterClientes(value: string): ClienteDTO[] {
+    const filterValue = value.toLowerCase();
+    return this.clientes.filter(cliente => {
+      const nombreCompleto = `${cliente.nombre} ${cliente.apellido}`.toLowerCase();
+      const telefono = cliente.telefono ? cliente.telefono.toLowerCase() : '';
+      const documento = cliente.documento ? cliente.documento.toLowerCase() : '';
+      
+      return nombreCompleto.includes(filterValue) ||
+             cliente.nombre.toLowerCase().includes(filterValue) ||
+             cliente.apellido.toLowerCase().includes(filterValue) ||
+             telefono.includes(filterValue) ||
+             documento.includes(filterValue);
+    });
+  }
+
+  onClienteSelected(cliente: ClienteDTO): void {
     if (cliente) {
       this.selectedCliente = cliente;
       this.vehiculoForm.patchValue({
         clienteId: cliente.id,
-        clienteSearch: `${cliente.nombre} ${cliente.apellido} - ${cliente.documento}`
+        clienteSearch: `${cliente.nombre} ${cliente.apellido} - ${cliente.telefono || ''}`
       });
     }
   }
 
-  displayClienteFn = (clienteId: number | string): string => {
-    if (typeof clienteId === 'string') {
-      return clienteId;
+  displayClienteFn = (cliente: ClienteDTO | string): string => {
+    if (typeof cliente === 'string') {
+      return cliente;
     }
-    if (typeof clienteId === 'number') {
-      const cliente = this.clientes.find(c => c.id === clienteId);
-      return cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.telefono}` : '';
-    }
-    return '';
+    if (!cliente) return '';
+    return `${cliente.nombre} ${cliente.apellido} - ${cliente.telefono || ''}`;
   }
 
   applyFilter(): void {
@@ -187,7 +198,7 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
       
       this.vehiculoForm.patchValue({
         clienteId: vehiculo.clienteId,
-        clienteSearch: cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.telefono}` : '',
+        clienteSearch: cliente ? `${cliente.nombre} ${cliente.apellido} - ${cliente.telefono || ''}` : '',
         placa: vehiculo.placa,
         marca: vehiculo.marca,
         modelo: vehiculo.modelo,
@@ -197,7 +208,11 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
         activo: vehiculo.activo
       });
     } else {
-      this.vehiculoForm.reset({ activo: true });
+      this.vehiculoForm.reset({ 
+        activo: true,
+        clienteSearch: '',
+        clienteId: ''
+      });
       this.selectedCliente = null;
     }
   }
@@ -260,7 +275,11 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
     this.selectedVehiculo = null;
     this.selectedCliente = null;
     this.showDialog = false;
-    this.vehiculoForm.reset({ activo: true });
+    this.vehiculoForm.reset({ 
+      activo: true,
+      clienteSearch: '',
+      clienteId: ''
+    });
   }
 
   getErrorMessage(field: string): string {

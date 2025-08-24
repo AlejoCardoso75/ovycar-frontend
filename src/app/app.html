@@ -1,14 +1,10 @@
-<!-- Mostrar solo el router-outlet si no está autenticado (para login) -->
-<div *ngIf="!authService.isAuthenticated()" class="full-screen">
-  <router-outlet></router-outlet>
-</div>
-
-<!-- Mostrar el layout completo con sidebar si está autenticado -->
-<mat-sidenav-container class="sidenav-container" *ngIf="authService.isAuthenticated()">
+<!-- Layout principal -->
+<mat-sidenav-container class="sidenav-container">
   <mat-sidenav #drawer class="sidenav" fixedInViewport
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="(isHandset$ | async) ? 'over' : 'side'"
-      [opened]="(isHandset$ | async) === false">
+      [opened]="(isHandset$ | async) === false"
+      *ngIf="authService.isAuthenticated()">
     <mat-toolbar>Menu</mat-toolbar>
     <mat-nav-list>
       <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
@@ -58,7 +54,7 @@
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content class="sidenav-content">
-    <mat-toolbar color="primary">
+    <mat-toolbar color="primary" *ngIf="authService.isAuthenticated()">
       <button
         type="button"
         aria-label="Toggle sidenav"

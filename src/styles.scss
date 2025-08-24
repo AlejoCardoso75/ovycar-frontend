@@ -100,6 +100,20 @@ html, body {
   }
 }
 
+/* Session warning modal styles */
+.session-warning-dialog {
+  .mat-mdc-dialog-container {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .mat-mdc-dialog-surface {
+    padding: 0;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+}
+
 .hidden-desktop {
   @media (min-width: 769px) {
     display: none !important;

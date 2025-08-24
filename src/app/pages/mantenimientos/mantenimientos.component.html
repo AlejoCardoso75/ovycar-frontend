@@ -69,6 +69,9 @@
             <mat-label>Buscar mantenimientos</mat-label>
             <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Vehículo, cliente, tipo o estado">
             <mat-icon matSuffix>search</mat-icon>
+            <button mat-icon-button matSuffix *ngIf="searchTerm" (click)="clearSearch()" matTooltip="Limpiar búsqueda">
+              <mat-icon>clear</mat-icon>
+            </button>
           </mat-form-field>
         </div>
         
@@ -186,10 +189,10 @@
           </div>
         </mat-tab>
 
-        <mat-tab label="Programados ({{ estadisticas.programados }})">
+        <mat-tab label="Programados ({{ mantenimientosProgramadosFiltrados.length }})">
           <div class="tab-content">
             <div class="mantenimientos-grid">
-              <mat-card *ngFor="let mantenimiento of mantenimientosProgramados" class="mantenimiento-card programado">
+              <mat-card *ngFor="let mantenimiento of mantenimientosProgramadosFiltrados" class="mantenimiento-card programado">
                 <mat-card-header>
                   <mat-card-title>{{ mantenimiento.tipoMantenimiento }}</mat-card-title>
                   <mat-card-subtitle>{{ mantenimiento.vehiculoPlaca }} - {{ mantenimiento.clienteNombre }}</mat-card-subtitle>
@@ -213,10 +216,10 @@
           </div>
         </mat-tab>
 
-        <mat-tab label="En Proceso ({{ estadisticas.enProceso }})">
+        <mat-tab label="En Proceso ({{ mantenimientosEnProcesoFiltrados.length }})">
           <div class="tab-content">
             <div class="mantenimientos-grid">
-              <mat-card *ngFor="let mantenimiento of mantenimientosEnProceso" class="mantenimiento-card en-proceso">
+              <mat-card *ngFor="let mantenimiento of mantenimientosEnProcesoFiltrados" class="mantenimiento-card en-proceso">
                 <mat-card-header>
                   <mat-card-title>{{ mantenimiento.tipoMantenimiento }}</mat-card-title>
                   <mat-card-subtitle>{{ mantenimiento.vehiculoPlaca }} - {{ mantenimiento.clienteNombre }}</mat-card-subtitle>
@@ -240,10 +243,10 @@
           </div>
         </mat-tab>
 
-        <mat-tab label="Completados ({{ estadisticas.completados }})">
+        <mat-tab label="Completados ({{ mantenimientosCompletadosFiltrados.length }})">
           <div class="tab-content">
             <div class="mantenimientos-grid">
-              <mat-card *ngFor="let mantenimiento of mantenimientosCompletados" class="mantenimiento-card completado">
+              <mat-card *ngFor="let mantenimiento of mantenimientosCompletadosFiltrados" class="mantenimiento-card completado">
                 <mat-card-header>
                   <mat-card-title>{{ mantenimiento.tipoMantenimiento }}</mat-card-title>
                   <mat-card-subtitle>{{ mantenimiento.vehiculoPlaca }} - {{ mantenimiento.clienteNombre }}</mat-card-subtitle>

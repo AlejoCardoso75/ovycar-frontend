@@ -15,9 +15,9 @@ export function AuthInterceptor(
   // Obtener el token del servicio de autenticación
   const token = authService.getToken();
   
-  // Si hay token, verificar si está expirado
+  // Si hay token, verificar si está expirado o inactivo
   if (token) {
-    if (authService.isTokenExpired()) {
+    if (!authService.isTokenValid()) {
       authService.logout();
       router.navigate(['/login']);
       return next(request);

@@ -37,15 +37,30 @@
         <span matListItemTitle>Ingresos</span>
       </a>
       
-      <a mat-list-item routerLink="/egresos" routerLinkActive="active">
-        <mat-icon matListItemIcon>trending_down</mat-icon>
-        <span matListItemTitle>Egresos</span>
+      <a mat-list-item routerLink="/ganancia-socio" routerLinkActive="active">
+        <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
+        <span matListItemTitle>Ganancia por Socio</span>
       </a>
       
-      <a mat-list-item routerLink="/egresos-gestion" routerLinkActive="active">
-        <mat-icon matListItemIcon>receipt_long</mat-icon>
-        <span matListItemTitle>Gestión Egresos</span>
-      </a>
+      <!-- Menú desplegable de Egresos -->
+      <mat-expansion-panel class="egresos-menu" [expanded]="false">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon matListItemIcon>trending_down</mat-icon>
+            <span>Egresos</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        
+        <a mat-list-item routerLink="/egresos" routerLinkActive="active" class="submenu-item">
+          <mat-icon matListItemIcon>bar_chart</mat-icon>
+          <span matListItemTitle>Reporte Egresos</span>
+        </a>
+        
+        <a mat-list-item routerLink="/egresos-gestion" routerLinkActive="active" class="submenu-item">
+          <mat-icon matListItemIcon>receipt_long</mat-icon>
+          <span matListItemTitle>Gestión Egresos</span>
+        </a>
+      </mat-expansion-panel>
       
       <a mat-list-item routerLink="/perfil" routerLinkActive="active">
         <mat-icon matListItemIcon>person</mat-icon>

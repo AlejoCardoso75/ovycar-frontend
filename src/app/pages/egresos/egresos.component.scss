@@ -279,6 +279,61 @@
   }
 }
 
+// Paginación
+.pagination-container {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+
+  .pagination-info {
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    button {
+      min-width: 40px;
+      height: 36px;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &:not(:disabled):hover {
+        background: #f8f9fa;
+      }
+
+      &.active {
+        background: #dc3545;
+        color: white;
+      }
+    }
+
+    .page-numbers {
+      display: flex;
+      gap: 5px;
+
+      button {
+        min-width: 36px;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
 // Responsive
 @media (max-width: 768px) {
   .egresos-container {

@@ -114,6 +114,14 @@
                   <td mat-cell *matCellDef="let mantenimiento"> {{ formatDate(mantenimiento.fechaProgramada) }} </td>
                 </ng-container>
 
+                <!-- Columna Fecha Completado -->
+                <ng-container matColumnDef="fechaCompletado">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Completado </th>
+                  <td mat-cell *matCellDef="let mantenimiento"> 
+                    {{ mantenimiento.estado === 'COMPLETADO' && mantenimiento.fechaFin ? formatDate(mantenimiento.fechaFin) : '-' }} 
+                  </td>
+                </ng-container>
+
                 <!-- Columna Estado -->
                 <ng-container matColumnDef="estado">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header> Estado </th>
@@ -283,142 +291,220 @@
       
       <mat-card-content>
         <form [formGroup]="mantenimientoForm" (ngSubmit)="saveMantenimiento()">
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Buscar Vehículo *</mat-label>
-              <input matInput 
-                     formControlName="vehiculoSearch" 
-                     placeholder="Buscar por placa, marca, modelo o cliente"
-                     [matAutocomplete]="auto">
-              <mat-autocomplete #auto="matAutocomplete" 
-                               (optionSelected)="onVehiculoSelected($event.option.value)"
-                               [displayWith]="displayVehiculoFn">
-                <mat-option *ngFor="let vehiculo of filteredVehiculos | async" [value]="vehiculo.id">
-                  {{ vehiculo.placa }} - {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.clienteNombre }})
-                </mat-option>
-              </mat-autocomplete>
-              <mat-error *ngIf="mantenimientoForm.get('vehiculoSearch')?.hasError('required')">
-                Debe seleccionar un vehículo
-              </mat-error>
-            </mat-form-field>
-            <!-- Campo oculto para el ID del vehículo -->
-            <input type="hidden" formControlName="vehiculoId">
+          
+          <!-- SECCIÓN 1: INFORMACIÓN BÁSICA -->
+          <div class="form-section">
+            <h3 class="section-title">Información Básica</h3>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Buscar Vehículo *</mat-label>
+                <input matInput 
+                       formControlName="vehiculoSearch" 
+                       placeholder="Buscar por placa, marca, modelo o cliente"
+                       [matAutocomplete]="auto">
+                <mat-autocomplete #auto="matAutocomplete" 
+                                 (optionSelected)="onVehiculoSelected($event.option.value)"
+                                 [displayWith]="displayVehiculoFn">
+                  <mat-option *ngFor="let vehiculo of filteredVehiculos | async" [value]="vehiculo.id">
+                    {{ vehiculo.placa }} - {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.clienteNombre }})
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-error *ngIf="mantenimientoForm.get('vehiculoSearch')?.hasError('required')">
+                  Debe seleccionar un vehículo
+                </mat-error>
+              </mat-form-field>
+              <!-- Campo oculto para el ID del vehículo -->
+              <input type="hidden" formControlName="vehiculoId">
 
-            <mat-form-field appearance="outline">
-              <mat-label>Tipo de Mantenimiento *</mat-label>
-              <mat-select formControlName="tipoMantenimiento">
-                <mat-option *ngFor="let tipo of tiposMantenimiento" [value]="tipo">
-                  {{ tipo }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="mantenimientoForm.get('tipoMantenimiento')?.hasError('required')">
-                {{ getErrorMessage('tipoMantenimiento') }}
-              </mat-error>
-            </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Tipo de Mantenimiento *</mat-label>
+                <mat-select formControlName="tipoMantenimiento">
+                  <mat-option *ngFor="let tipo of tiposMantenimiento" [value]="tipo">
+                    {{ tipo }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="mantenimientoForm.get('tipoMantenimiento')?.hasError('required')">
+                  {{ getErrorMessage('tipoMantenimiento') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Fecha Programada *</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fechaProgramada" (dateChange)="onFechaProgramadaChange($event)">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                <mat-error *ngIf="mantenimientoForm.get('fechaProgramada')?.hasError('required')">
+                  {{ getErrorMessage('fechaProgramada') }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Estado *</mat-label>
+                <mat-select formControlName="estado">
+                  <mat-option *ngFor="let estado of estados" [value]="estado">
+                    {{ estado }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="mantenimientoForm.get('estado')?.hasError('required')">
+                  {{ getErrorMessage('estado') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Mecánico *</mat-label>
+                <input matInput formControlName="mecanico" placeholder="Nombre del mecánico que realizará el servicio">
+                <mat-error *ngIf="mantenimientoForm.get('mecanico')?.hasError('required')">
+                  Debe especificar el mecánico
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Kilometraje Actual</mat-label>
+                <input matInput 
+                       formControlName="kilometrajeActual" 
+                       placeholder="0" 
+                       readonly
+                       [value]="selectedVehiculo?.kilometraje || 0">
+                <mat-icon matSuffix>speed</mat-icon>
+                <mat-error *ngIf="mantenimientoForm.get('kilometrajeActual')?.hasError('min')">
+                  {{ getErrorMessage('kilometrajeActual') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
           </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Fecha Programada *</mat-label>
-              <input matInput [matDatepicker]="picker" formControlName="fechaProgramada" (dateChange)="onFechaProgramadaChange($event)">
-              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-              <mat-error *ngIf="mantenimientoForm.get('fechaProgramada')?.hasError('required')">
-                {{ getErrorMessage('fechaProgramada') }}
-              </mat-error>
-            </mat-form-field>
+          <!-- SECCIÓN 2: COSTOS Y REPUESTOS -->
+          <div class="form-section">
+            <h3 class="section-title">Costos y Repuestos</h3>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Costo Total</mat-label>
+                <input matInput 
+                       [value]="costoTotalCalculado" 
+                       placeholder="0" 
+                       readonly
+                       [class.calculated]="true">
+                <mat-icon matSuffix>calculate</mat-icon>
+                <mat-hint>Suma automática de todos los costos</mat-hint>
+              </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Estado *</mat-label>
-              <mat-select formControlName="estado">
-                <mat-option *ngFor="let estado of estados" [value]="estado">
-                  {{ estado }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="mantenimientoForm.get('estado')?.hasError('required')">
-                {{ getErrorMessage('estado') }}
-              </mat-error>
-            </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Proveedor de Repuestos *</mat-label>
+                <mat-select formControlName="proveedorRepuestos" (selectionChange)="onProveedorRepuestosChange($event)">
+                  <mat-option value="taller">Taller</mat-option>
+                  <mat-option value="cliente">Cliente</mat-option>
+                </mat-select>
+                <mat-error *ngIf="mantenimientoForm.get('proveedorRepuestos')?.hasError('required')">
+                  Debe especificar quién proporciona los repuestos
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+                        <!-- Campos específicos para taller -->
+            <div *ngIf="mantenimientoForm.get('proveedorRepuestos')?.value === 'taller'">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Valor Repuestos</mat-label>
+                  <input matInput 
+                         formControlName="valorRepuestos" 
+                         placeholder="0" 
+                         appNumberFormat="currency"
+                         [decimalPlaces]="0"
+                         [thousandSeparator]="','"
+                         [decimalSeparator]="'.'"
+                         (input)="onValorRepuestosChange()">
+                  <mat-icon matSuffix>build</mat-icon>
+                  <mat-error *ngIf="mantenimientoForm.get('valorRepuestos')?.hasError('min')">
+                    {{ getErrorMessage('valorRepuestos') }}
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>20% Valor Repuestos</mat-label>
+                  <input matInput 
+                         [value]="valorRepuestosCalculado" 
+                         placeholder="0" 
+                         readonly
+                         [class.calculated]="true">
+                  <mat-icon matSuffix>calculate</mat-icon>
+                  <mat-hint>20% del valor de repuestos</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Campos comunes para ambos proveedores -->
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Costo Mano de Obra</mat-label>
+                <input matInput 
+                       formControlName="costoManoObra" 
+                       placeholder="0" 
+                       appNumberFormat="currency"
+                       [decimalPlaces]="0"
+                       [thousandSeparator]="','"
+                       [decimalSeparator]="'.'"
+                       (input)="onCostoManoObraChange()">
+                <mat-icon matSuffix>engineering</mat-icon>
+                <mat-error *ngIf="mantenimientoForm.get('costoManoObra')?.hasError('min')">
+                  {{ getErrorMessage('costoManoObra') }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Costo Adicionales</mat-label>
+                <input matInput 
+                       formControlName="costoAdicionales" 
+                       placeholder="0" 
+                       appNumberFormat="currency"
+                       [decimalPlaces]="0"
+                       [thousandSeparator]="','"
+                       [decimalSeparator]="'.'"
+                       (input)="onCostoAdicionalesChange()">
+                <mat-icon matSuffix>add_circle</mat-icon>
+                <mat-error *ngIf="mantenimientoForm.get('costoAdicionales')?.hasError('min')">
+                  {{ getErrorMessage('costoAdicionales') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Garantía</mat-label>
+                <input matInput 
+                       formControlName="garantia" 
+                       placeholder="Sin garantía"
+                       readonly>
+                <mat-icon matSuffix>security</mat-icon>
+                <mat-error *ngIf="mantenimientoForm.get('garantia')?.hasError('required')">
+                  {{ getErrorMessage('garantia') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
           </div>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Mecánico *</mat-label>
-              <input matInput formControlName="mecanico" placeholder="Nombre del mecánico que realizará el servicio">
-              <mat-error *ngIf="mantenimientoForm.get('mecanico')?.hasError('required')">
-                Debe especificar el mecánico
-              </mat-error>
-            </mat-form-field>
+          <!-- SECCIÓN 3: DESCRIPCIÓN Y OBSERVACIONES -->
+          <div class="form-section">
+            <h3 class="section-title">Descripción y Observaciones</h3>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Descripción</mat-label>
+                <textarea matInput formControlName="descripcion" placeholder="Descripción del mantenimiento" rows="3"></textarea>
+              </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Proveedor de Repuestos *</mat-label>
-              <mat-select formControlName="proveedorRepuestos" (selectionChange)="onProveedorRepuestosChange($event)">
-                <mat-option value="taller">Taller</mat-option>
-                <mat-option value="cliente">Cliente</mat-option>
-              </mat-select>
-              <mat-error *ngIf="mantenimientoForm.get('proveedorRepuestos')?.hasError('required')">
-                Debe especificar quién proporciona los repuestos
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Costo</mat-label>
-              <input matInput 
-                     formControlName="costo" 
-                     placeholder="0" 
-                     appNumberFormat="currency"
-                     [decimalPlaces]="0"
-                     [thousandSeparator]="','"
-                     [decimalSeparator]="'.'">
-              <mat-error *ngIf="mantenimientoForm.get('costo')?.hasError('min')">
-                {{ getErrorMessage('costo') }}
-              </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Kilometraje Actual</mat-label>
-              <input matInput 
-                     formControlName="kilometrajeActual" 
-                     placeholder="0" 
-                     readonly
-                     [value]="selectedVehiculo?.kilometraje || 0">
-              <mat-icon matSuffix>speed</mat-icon>
-              <mat-error *ngIf="mantenimientoForm.get('kilometrajeActual')?.hasError('min')">
-                {{ getErrorMessage('kilometrajeActual') }}
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Garantía</mat-label>
-              <input matInput 
-                     formControlName="garantia" 
-                     placeholder="Sin garantía"
-                     readonly>
-              <mat-icon matSuffix>security</mat-icon>
-              <mat-error *ngIf="mantenimientoForm.get('garantia')?.hasError('required')">
-                {{ getErrorMessage('garantia') }}
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Descripción</mat-label>
-              <textarea matInput formControlName="descripcion" placeholder="Descripción del mantenimiento" rows="3"></textarea>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Observaciones</mat-label>
-              <textarea matInput formControlName="observaciones" placeholder="Observaciones adicionales" rows="3"></textarea>
-            </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Observaciones</mat-label>
+                <textarea matInput formControlName="observaciones" placeholder="Observaciones adicionales" rows="3"></textarea>
+              </mat-form-field>
+            </div>
           </div>
 
           <div class="form-actions">

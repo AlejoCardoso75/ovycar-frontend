@@ -13,6 +13,12 @@ export interface IngresoMantenimiento {
   mecanico: string;
   estado: 'completado' | 'en_proceso' | 'cancelado' | 'pendiente';
   semana: string; // Formato: "YYYY-WW" (año-semana)
+  costoManoObra?: number;
+  valorRepuestos?: number;
+  porcentajeRepuestos?: number;
+  ingresoNeto?: number;
+  ingresoAdicional?: number;
+  gananciaManoObra?: number;
 }
 
 export interface ResumenSemanal {
@@ -23,6 +29,7 @@ export interface ResumenSemanal {
   cantidadMantenimientos: number;
   promedioPorMantenimiento: number;
   crecimientoVsSemanaAnterior: number;
+  gananciasNetas: number;
   mantenimientos: IngresoMantenimiento[];
 }
 
@@ -31,6 +38,7 @@ export interface HistorialSemanas {
   totalGeneral: number;
   promedioSemanal: number;
   crecimientoPromedio: number;
+  totalGananciasNetas: number;
 }
 
 @Injectable({
@@ -71,22 +79,39 @@ export class IngresosService {
   getFechasSemana(semana: string): { fechaInicio: Date; fechaFin: Date } {
     const [year, week] = semana.split('-').map(Number);
     
-    // Calcular el primer día del año
-    const firstDayOfYear = new Date(year, 0, 1);
+    // Encontrar el primer lunes del año
+    let firstDayOfYear = new Date(year, 0, 1);
+    let firstMonday = new Date(firstDayOfYear);
     
-    // Calcular el primer día de la semana
-    const daysToAdd = (week - 1) * 7;
-    const firstDayOfWeek = new Date(firstDayOfYear.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+    // Ajustar hasta encontrar el primer lunes
+    while (firstMonday.getDay() !== 1) { // 1 = lunes
+      firstMonday.setDate(firstMonday.getDate() + 1);
+    }
     
-    // Ajustar al lunes
-    const dayOfWeek = firstDayOfWeek.getDay();
-    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const monday = new Date(firstDayOfWeek.getTime() - daysToMonday * 24 * 60 * 60 * 1000);
+    // Calcular el lunes de la semana especificada
+    const startOfWeek = new Date(firstMonday.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
     
-    // Domingo es 6 días después del lunes
-    const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
+    // El fin de la semana es el domingo (6 días después del lunes)
+    const endOfWeek = new Date(startOfWeek.getTime() + 6 * 24 * 60 * 60 * 1000);
     
-    return { fechaInicio: monday, fechaFin: sunday };
+    return { fechaInicio: startOfWeek, fechaFin: endOfWeek };
+  }
+
+  private getWeekBasedYear(date: Date): number {
+    const year = date.getFullYear();
+    const week = this.getWeekNumber(date);
+    
+    // Si estamos en las primeras semanas del año pero la semana pertenece al año anterior
+    if (week >= 52 && date.getMonth() === 0 && date.getDate() <= 3) {
+      return year - 1;
+    }
+    
+    // Si estamos en las últimas semanas del año pero la semana pertenece al año siguiente
+    if (week <= 1 && date.getMonth() === 11 && date.getDate() >= 29) {
+      return year + 1;
+    }
+    
+    return year;
   }
 
   private getWeekNumber(date: Date): number {
@@ -110,6 +135,7 @@ export class IngresosService {
           cantidadMantenimientos: 6,
           promedioPorMantenimiento: 80833,
           crecimientoVsSemanaAnterior: 15.2,
+          gananciasNetas: 242500,
           mantenimientos: [
             {
               id: 1,
@@ -138,7 +164,8 @@ export class IngresosService {
       ],
       totalGeneral: 485000,
       promedioSemanal: 485000,
-      crecimientoPromedio: 15.2
+      crecimientoPromedio: 15.2,
+      totalGananciasNetas: 242500
     };
     
     return of(historial);

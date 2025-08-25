@@ -27,15 +27,8 @@ export class AuthService {
         }),
         catchError(error => {
           console.error('Error en login:', error);
-          return of({
-            token: '',
-            username: '',
-            nombre: '',
-            apellido: '',
-            rol: '',
-            message: 'Error de conexión',
-            success: false
-          });
+          // Propagar el error para que el componente lo maneje
+          return throwError(() => error);
         })
       );
   }

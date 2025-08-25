@@ -24,6 +24,11 @@ export class EgresosComponent implements OnInit {
   loading = false;
   error = false;
 
+  // Variables de paginación
+  currentPage = 1;
+  itemsPerPage = 6; // Mostrar 6 semanas por página
+  semanasPaginadas: ResumenEgresoSemanal[] = [];
+
   constructor(private egresosService: EgresosService) {}
 
   ngOnInit(): void {
@@ -37,6 +42,8 @@ export class EgresosComponent implements OnInit {
     this.egresosService.getHistorialSemanas().subscribe({
       next: (data) => {
         this.historial = data;
+        this.currentPage = 1; // Reset a la primera página
+        this.updatePaginacion();
         if (data.semanas.length > 0) {
           this.seleccionarSemana(data.semanas[0]);
         }
@@ -86,5 +93,76 @@ export class EgresosComponent implements OnInit {
       month: '2-digit',
       year: 'numeric'
     });
+  }
+
+  // Métodos de paginación
+  get totalPages(): number {
+    if (!this.historial) return 0;
+    return Math.ceil(this.historial.semanas.length / this.itemsPerPage);
+  }
+
+  get startIndex(): number {
+    return (this.currentPage - 1) * this.itemsPerPage;
+  }
+
+  get endIndex(): number {
+    if (!this.historial) return 0;
+    return Math.min(this.startIndex + this.itemsPerPage, this.historial.semanas.length);
+  }
+
+  updatePaginacion(): void {
+    if (!this.historial) {
+      this.semanasPaginadas = [];
+      return;
+    }
+    
+    const start = this.startIndex;
+    const end = this.endIndex;
+    this.semanasPaginadas = this.historial.semanas.slice(start, end);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginacion();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginacion();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginacion();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    
+    if (this.totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      let start = Math.max(1, this.currentPage - 2);
+      let end = Math.min(this.totalPages, start + maxVisiblePages - 1);
+      
+      if (end - start < maxVisiblePages - 1) {
+        start = Math.max(1, end - maxVisiblePages + 1);
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
   }
 }

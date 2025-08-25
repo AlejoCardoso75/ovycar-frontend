@@ -46,6 +46,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { 
+    path: 'ganancia-socio', 
+    loadComponent: () => import('./pages/ganancia-socio/ganancia-socio.component').then(m => m.GananciaSocioComponent),
+    canActivate: [AuthGuard]
+  },
+  { 
     path: 'productos', 
     loadComponent: () => import('./pages/productos/productos.component').then(m => m.ProductosComponent),
     canActivate: [AuthGuard]

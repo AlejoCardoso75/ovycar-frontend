@@ -80,9 +80,13 @@ export class LoginComponent implements OnInit {
           if (error.error && error.error.message) {
             errorMessage = error.error.message;
           } else if (error.status === 401) {
-            errorMessage = 'Credenciales inválidas';
+            errorMessage = 'Usuario o contraseña incorrectos';
           } else if (error.status === 0) {
             errorMessage = 'Error de conexión con el servidor';
+          } else if (error.status === 403) {
+            errorMessage = 'Acceso denegado';
+          } else if (error.status >= 500) {
+            errorMessage = 'Error del servidor. Por favor, inténtelo más tarde';
           }
           
           this.snackBar.open(errorMessage, 'Cerrar', { duration: 3000 });

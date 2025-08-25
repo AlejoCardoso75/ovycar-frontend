@@ -17,6 +17,9 @@ export interface Mantenimiento {
   kilometrajeActual?: number;
   observaciones?: string;
   costo?: number;
+  costoManoObra?: number;
+  valorRepuestos?: number;
+  costoAdicionales?: number;
   mecanico?: string;
   proveedorRepuestos?: string;
   garantia?: string;
@@ -39,6 +42,9 @@ export interface MantenimientoDTO {
   kilometrajeActual?: number;
   observaciones?: string;
   costo?: number;
+  costoManoObra?: number;
+  valorRepuestos?: number;
+  costoAdicionales?: number;
   mecanico?: string;
   proveedorRepuestos?: string;
   garantia?: string;

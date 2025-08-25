@@ -1,4 +1,4 @@
-.ingresos-container {
+.ganancia-socio-container {
   min-height: 100vh;
   background: #ffffff;
   padding: 20px;
@@ -115,16 +115,6 @@
       color: #333;
       font-weight: 600;
     }
-
-          .week-info {
-        background: #007bff;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        white-space: nowrap;
-      }
   }
 
   .week-stats {
@@ -155,7 +145,20 @@
         font-weight: 500;
       }
 
-      &.ganancias-netas {
+      &.egresos {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        border-color: #dc3545;
+        
+        .stat-value {
+          color: white;
+        }
+        
+        .stat-label {
+          color: rgba(255, 255, 255, 0.9);
+        }
+      }
+
+      &.ganancia-socio {
         background: linear-gradient(135deg, #28a745, #20c997);
         border-color: #28a745;
         
@@ -167,93 +170,35 @@
           color: rgba(255, 255, 255, 0.9);
         }
       }
-    }
-  }
+         }
+   }
 
-  .table-container {
-    h4 {
-      margin: 0 0 15px 0;
-      font-size: 1.2rem;
-      color: #333;
-      font-weight: 600;
-    }
+   .socios-info {
+     margin-top: 20px;
+     padding: 15px;
+     background: white;
+     border-radius: 10px;
+     border: 1px solid #dee2e6;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    .maintenance-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+     .socio-item {
+       margin: 8px 0;
+       font-size: 1rem;
+       font-weight: 500;
+       color: #333;
+       text-align: center;
 
-      th {
-        background: #007bff;
-        color: white;
-        padding: 12px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 0.85rem;
-      }
+       &:first-child {
+         margin-top: 0;
+       }
 
-      td {
-        padding: 12px;
-        border-bottom: 1px solid #f1f3f4;
-        color: #333;
+       &:last-child {
+         margin-bottom: 0;
+       }
+     }
+   }
 
-        &.amount {
-          font-weight: 600;
-          color: #28a745;
-        }
-
-        &.mano-obra {
-          font-weight: 600;
-          color: #dc3545;
-          border-left: 3px solid #000000;
-          padding-left: 15px;
-        }
-
-        &.ganancia-mano-obra {
-          font-weight: 600;
-          color: #28a745;
-          border-left: 3px solid #000000;
-          padding-left: 15px;
-        }
-
-        &.repuestos {
-          font-weight: 600;
-          color: #dc3545;
-        }
-
-        &.porcentaje-repuestos {
-          font-weight: 600;
-          color: #28a745;
-        }
-
-        &.ingreso-adicional {
-          font-weight: 600;
-          color: #28a745;
-        }
-
-        &.ingreso-neto {
-          font-weight: 700;
-          color: #28a745;
-          border-left: 3px solid #000000;
-          padding-left: 15px;
-        }
-      }
-
-      tr:hover {
-        background: #f8f9fa;
-      }
-
-      tbody tr:last-child td {
-        border-bottom: none;
-      }
-    }
-  }
-}
-
-
+ }
 
 // Historial de semanas
 .history-section {
@@ -326,23 +271,38 @@
           color: #666;
         }
 
-        .ganancias-netas-info {
+        .ganancia-socio-info {
           margin-top: 8px;
           padding-top: 8px;
           border-top: 1px solid #e9ecef;
 
-          .ganancias-label {
+          .ganancia-label {
             display: block;
             font-size: 0.75rem;
             color: #666;
             margin-bottom: 2px;
           }
 
-          .ganancias-value {
+          .ganancia-value {
             display: block;
             font-size: 0.9rem;
             font-weight: 600;
             color: #28a745;
+            margin-bottom: 4px;
+          }
+
+          .egresos-label {
+            display: block;
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 2px;
+          }
+
+          .egresos-value {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #dc3545;
           }
         }
       }
@@ -407,7 +367,7 @@
 
 // Responsive
 @media (max-width: 768px) {
-  .ingresos-container {
+  .ganancia-socio-container {
     padding: 15px;
   }
 
@@ -431,12 +391,4 @@
   .weeks-grid {
     grid-template-columns: 1fr;
   }
-
-  .maintenance-table {
-    font-size: 0.85rem;
-
-    th, td {
-      padding: 8px;
-    }
-  }
-} 
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -62,7 +62,7 @@ import { NumberFormatDirective } from '../../directives/number-format.directive'
   styleUrls: ['./mantenimientos.component.scss']
 })
 export class MantenimientosComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['vehiculo', 'tipoMantenimiento', 'fechaProgramada', 'estado', 'mecanico', 'costo', 'acciones'];
+  displayedColumns: string[] = ['vehiculo', 'tipoMantenimiento', 'fechaProgramada', 'fechaCompletado', 'estado', 'mecanico', 'costo', 'acciones'];
   dataSource = new MatTableDataSource<MantenimientoDTO>([]);
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -118,7 +118,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     private vehiculoService: VehiculoService,
     private confirmationModalService: ConfirmationModalService,
     private snackBar: MatSnackBar,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
   ) {
     this.initForm();
   }
@@ -128,6 +129,12 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     this.loadVehiculos();
     // Inicializar las listas filtradas
     this.aplicarFiltroBusqueda();
+    
+    // Suscribirse a cambios en valorRepuestos para actualización en tiempo real
+    this.mantenimientoForm.get('valorRepuestos')?.valueChanges.subscribe(() => {
+      // Forzar detección de cambios para actualizar el campo calculado
+      this.cdr.detectChanges();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -146,6 +153,9 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
       kilometrajeActual: ['', [Validators.min(0)]],
       observaciones: [''],
       costo: ['', [Validators.min(0)]],
+      costoManoObra: ['', [Validators.min(0)]],
+      valorRepuestos: ['', [Validators.min(0)]],
+      costoAdicionales: ['', [Validators.min(0)]],
       mecanico: ['', [Validators.required]],
       proveedorRepuestos: ['', [Validators.required]],
       garantia: ['Sin garantía']
@@ -216,20 +226,7 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onProveedorRepuestosChange(event: any): void {
-    const proveedor = event.value;
-    const fechaProgramada = this.mantenimientoForm.get('fechaProgramada')?.value;
-    
-    if (proveedor === 'cliente') {
-      // Si el cliente proporciona los repuestos, no hay garantía
-      this.mantenimientoForm.patchValue({
-        garantia: 'Sin garantía'
-      });
-    } else if (proveedor === 'taller' && fechaProgramada) {
-      // Si el taller proporciona los repuestos, calcular 3 meses después de la fecha programada
-      this.calcularGarantia(fechaProgramada);
-    }
-  }
+
 
   onFechaProgramadaChange(event: any): void {
     const fechaProgramada = event.value;
@@ -254,6 +251,77 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     this.mantenimientoForm.patchValue({
       garantia: `Garantía hasta ${fechaGarantiaFormateada}`
     });
+  }
+
+  onValorRepuestosChange(): void {
+    // Forzar detección de cambios para actualizar los campos calculados
+    this.cdr.detectChanges();
+  }
+
+  onCostoManoObraChange(): void {
+    // Forzar detección de cambios para actualizar el costo total
+    this.cdr.detectChanges();
+  }
+
+  onCostoAdicionalesChange(): void {
+    // Forzar detección de cambios para actualizar el costo total
+    this.cdr.detectChanges();
+  }
+
+  calcularManoObra(): string {
+    const valorRepuestos = this.mantenimientoForm.get('valorRepuestos')?.value || 0;
+    
+    // Siempre calcular el 20% del valor de repuestos para mostrar
+    if (valorRepuestos > 0) {
+      const calculo = Math.round(valorRepuestos * 0.2);
+      return calculo.toLocaleString('en-US');
+    }
+    return '0';
+  }
+
+  get valorRepuestosCalculado(): string {
+    return this.calcularManoObra();
+  }
+
+  get costoTotalCalculado(): string {
+    const valorRepuestos = this.mantenimientoForm.get('valorRepuestos')?.value || 0;
+    const costoManoObra = this.mantenimientoForm.get('costoManoObra')?.value || 0;
+    const costoAdicionales = this.mantenimientoForm.get('costoAdicionales')?.value || 0;
+    const proveedor = this.mantenimientoForm.get('proveedorRepuestos')?.value;
+    
+    let total = 0;
+    
+    if (proveedor === 'taller') {
+      // Para taller: suma valor repuestos + mano de obra + adicionales
+      total = valorRepuestos + costoManoObra + costoAdicionales;
+    } else if (proveedor === 'cliente') {
+      // Para cliente: suma mano de obra + adicionales (no incluye valor repuestos)
+      total = costoManoObra + costoAdicionales;
+    }
+    
+    return total.toLocaleString('en-US');
+  }
+
+  onProveedorRepuestosChange(event: any): void {
+    const proveedor = event.value;
+    const fechaProgramada = this.mantenimientoForm.get('fechaProgramada')?.value;
+    
+    if (proveedor === 'cliente') {
+      // Si el cliente proporciona los repuestos, limpiar solo valor repuestos y no hay garantía
+      this.mantenimientoForm.patchValue({
+        garantia: 'Sin garantía',
+        valorRepuestos: 0
+      });
+    } else if (proveedor === 'taller') {
+      // Si el taller proporciona los repuestos
+      if (fechaProgramada) {
+        // Calcular garantía 3 meses después de la fecha programada
+        this.calcularGarantia(fechaProgramada);
+      }
+    }
+    
+    // Forzar detección de cambios para actualizar los campos y el costo total
+    this.cdr.detectChanges();
   }
 
   displayVehiculoFn = (vehiculoId: number | string): string => {
@@ -369,6 +437,9 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
         kilometrajeActual: mantenimiento.kilometrajeActual,
         observaciones: mantenimiento.observaciones || '',
         costo: mantenimiento.costo,
+        costoManoObra: mantenimiento.costoManoObra,
+        valorRepuestos: mantenimiento.valorRepuestos,
+        costoAdicionales: mantenimiento.costoAdicionales,
         mecanico: mantenimiento.mecanico || '',
         proveedorRepuestos: mantenimiento.proveedorRepuestos || 'taller',
         garantia: mantenimiento.garantia || 'Sin garantía'
@@ -395,6 +466,19 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     if (this.mantenimientoForm.valid) {
       const mantenimientoData: any = this.mantenimientoForm.value;
       
+      // Calcular el costo total basado en los valores actuales
+      const valorRepuestos = mantenimientoData.valorRepuestos || 0;
+      const costoManoObra = mantenimientoData.costoManoObra || 0;
+      const costoAdicionales = mantenimientoData.costoAdicionales || 0;
+      const proveedor = mantenimientoData.proveedorRepuestos;
+      
+      let costoTotal = 0;
+      if (proveedor === 'taller') {
+        costoTotal = valorRepuestos + costoManoObra + costoAdicionales;
+      } else if (proveedor === 'cliente') {
+        costoTotal = costoManoObra + costoAdicionales;
+      }
+      
       if (this.isEditing && this.selectedMantenimiento) {
         // Para actualización
         const mantenimientoToUpdate = {
@@ -406,7 +490,10 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           estado: mantenimientoData.estado,
           kilometrajeActual: mantenimientoData.kilometrajeActual,
           observaciones: mantenimientoData.observaciones,
-          costo: mantenimientoData.costo,
+          costo: costoTotal,
+          costoManoObra: mantenimientoData.costoManoObra,
+          valorRepuestos: mantenimientoData.valorRepuestos,
+          costoAdicionales: mantenimientoData.costoAdicionales,
           mecanico: mantenimientoData.mecanico,
           proveedorRepuestos: mantenimientoData.proveedorRepuestos,
           garantia: mantenimientoData.garantia
@@ -433,7 +520,10 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           estado: mantenimientoData.estado,
           kilometrajeActual: mantenimientoData.kilometrajeActual,
           observaciones: mantenimientoData.observaciones,
-          costo: mantenimientoData.costo,
+          costo: costoTotal,
+          costoManoObra: mantenimientoData.costoManoObra,
+          valorRepuestos: mantenimientoData.valorRepuestos,
+          costoAdicionales: mantenimientoData.costoAdicionales,
           mecanico: mantenimientoData.mecanico,
           proveedorRepuestos: mantenimientoData.proveedorRepuestos,
           garantia: mantenimientoData.garantia

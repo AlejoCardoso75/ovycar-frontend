@@ -1,11 +1,11 @@
-<div class="egresos-container">
+<div class="ganancia-socio-container">
   <!-- Header simple y elegante -->
   <div class="header">
     <div class="header-content">
-      <div class="title-section">
-        <h1>💸 Egresos del Taller</h1>
-        <p>Resumen semanal de gastos</p>
-      </div>
+             <div class="title-section">
+         <h1>💰 Ganancias</h1>
+         <p>Ingresos netos menos egresos por semana</p>
+       </div>
       <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading" class="refresh-btn">
         <mat-icon>refresh</mat-icon>
         Actualizar
@@ -23,7 +23,7 @@
   <div *ngIf="error && !loading" class="error-container">
     <mat-icon>error_outline</mat-icon>
     <h3>Error al cargar los datos</h3>
-    <p>No se pudieron cargar los datos de egresos.</p>
+    <p>No se pudieron cargar los datos de ganancia por socio.</p>
     <button mat-raised-button color="primary" (click)="refreshData()">
       <mat-icon>refresh</mat-icon>
       Reintentar
@@ -41,39 +41,23 @@
       
       <div class="week-stats">
         <div class="stat-item">
-          <span class="stat-value">${{ semanaSeleccionada.totalEgresos | number:'1.0-0' }}</span>
+          <span class="stat-value">${{ semanaSeleccionada.ingresosNetos | number:'1.0-0' }}</span>
+          <span class="stat-label">Ingresos Netos</span>
+        </div>
+        <div class="stat-item egresos">
+          <span class="stat-value">${{ semanaSeleccionada.egresos | number:'1.0-0' }}</span>
           <span class="stat-label">Egresos</span>
         </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ semanaSeleccionada.cantidadEgresos }}</span>
-          <span class="stat-label">Gastos</span>
-        </div>
-      </div>
-
-      <!-- Tabla de egresos -->
-      <div class="table-container">
-        <h4>Egresos de esta semana</h4>
-        <table class="egresos-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Concepto</th>
-              <th>Categoría</th>
-              <th>Responsable</th>
-              <th>Monto</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let egreso of egresosFiltrados">
-              <td>{{ formatDate(egreso.fechaEgreso) }}</td>
-              <td>{{ egreso.concepto }}</td>
-              <td>{{ egreso.categoria }}</td>
-              <td>{{ egreso.responsable }}</td>
-              <td class="amount">${{ egreso.monto | number:'1.0-0' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                 <div class="stat-item ganancia-socio">
+           <span class="stat-value">${{ semanaSeleccionada.gananciaSocio | number:'1.0-0' }}</span>
+           <span class="stat-label">Ganancia por Socio</span>
+         </div>
+       </div>
+       
+       <div class="socios-info">
+         <p class="socio-item">Ganancia Alejandro Cardoso: ${{ (semanaSeleccionada.gananciaSocio * 0.5) | number:'1.0-0' }}</p>
+         <p class="socio-item">Ganancia Lizardo Oviedo: ${{ (semanaSeleccionada.gananciaSocio * 0.5) | number:'1.0-0' }}</p>
+       </div>
     </div>
 
     <!-- Historial de semanas -->
@@ -88,8 +72,14 @@
             <span class="week-dates">{{ getFormattedDateRange(semana.fechaInicio, semana.fechaFin) }}</span>
           </div>
           <div class="week-amount">
-            <span class="amount-value">${{ semana.totalEgresos | number:'1.0-0' }}</span>
-            <span class="egresos-count">{{ semana.cantidadEgresos }} egresos</span>
+            <span class="amount-value">${{ semana.gananciaSocio | number:'1.0-0' }}</span>
+            <span class="maintenance-count">{{ semana.cantidadMantenimientos }} mantenimientos</span>
+            <div class="ganancia-socio-info">
+              <span class="ganancia-label">Ingresos Netos:</span>
+              <span class="ganancia-value">${{ semana.ingresosNetos | number:'1.0-0' }}</span>
+              <span class="egresos-label">Egresos:</span>
+              <span class="egresos-value">${{ semana.egresos | number:'1.0-0' }}</span>
+            </div>
           </div>
         </div>
       </div>

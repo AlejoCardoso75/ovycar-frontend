@@ -35,46 +35,55 @@
     
     <!-- Semana actual -->
     <div class="current-week-section" *ngIf="semanaSeleccionada">
-      <div class="section-header">
-        <h3>📅 Semana Actual</h3>
-        <span class="week-info">{{ getFormattedDateRange(semanaSeleccionada.fechaInicio, semanaSeleccionada.fechaFin) }}</span>
-      </div>
+                           <div class="section-header">
+          <h3>📅 Semana ({{ getFormattedDateRange(semanaSeleccionada.fechaInicio, semanaSeleccionada.fechaFin) }})</h3>
+        </div>
       
-      <div class="week-stats">
-        <div class="stat-item">
-          <span class="stat-value">${{ semanaSeleccionada.totalIngresos | number:'1.0-0' }}</span>
-          <span class="stat-label">Ingresos</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ semanaSeleccionada.cantidadMantenimientos }}</span>
-          <span class="stat-label">Mantenimientos</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">${{ semanaSeleccionada.promedioPorMantenimiento | number:'1.0-0' }}</span>
-          <span class="stat-label">Promedio</span>
-        </div>
-      </div>
+             <div class="week-stats">
+                   <div class="stat-item">
+            <span class="stat-value">${{ semanaSeleccionada.totalIngresos | number:'1.0-0' }}</span>
+            <span class="stat-label">Ingresos Brutos</span>
+          </div>
+         <div class="stat-item">
+           <span class="stat-value">{{ semanaSeleccionada.cantidadMantenimientos }}</span>
+           <span class="stat-label">Mantenimientos</span>
+         </div>
+         <div class="stat-item ganancias-netas">
+           <span class="stat-value">${{ semanaSeleccionada.gananciasNetas | number:'1.0-0' }}</span>
+           <span class="stat-label">Ganancias Netas</span>
+         </div>
+       </div>
 
       <!-- Tabla de mantenimientos -->
       <div class="table-container">
         <h4>Mantenimientos de esta semana</h4>
         <table class="maintenance-table">
           <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Cliente</th>
-              <th>Vehículo</th>
-              <th>Mecánico</th>
-              <th>Monto</th>
-            </tr>
+                         <tr>
+               <th>Cliente</th>
+               <th>Vehículo</th>
+               <th>Mecánico</th>
+               <th>Ingreso Bruto</th>
+                               <th>Pago a Mano de Obra</th>
+                <th>Pago Repuesto</th>
+                <th>Ganancia Mano de Obra</th>
+                <th>20% Repuesto</th>
+                <th>Ingreso Adicional</th>
+                <th>Ingreso Neto</th>
+             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let mantenimiento of mantenimientosFiltrados">
-              <td>{{ formatDate(mantenimiento.fecha) }}</td>
               <td>{{ mantenimiento.cliente }}</td>
               <td>{{ mantenimiento.vehiculo }}</td>
               <td>{{ mantenimiento.mecanico }}</td>
-              <td class="amount">${{ mantenimiento.monto | number:'1.0-0' }}</td>
+                             <td class="amount">${{ mantenimiento.monto | number:'1.0-0' }}</td>
+                               <td class="mano-obra">${{ mantenimiento.costoManoObra || 0 | number:'1.0-0' }}</td>
+                <td class="repuestos">${{ mantenimiento.valorRepuestos || 0 | number:'1.0-0' }}</td>
+                <td class="ganancia-mano-obra">${{ mantenimiento.gananciaManoObra || 0 | number:'1.0-0' }}</td>
+                <td class="porcentaje-repuestos">${{ mantenimiento.porcentajeRepuestos || 0 | number:'1.0-0' }}</td>
+                <td class="ingreso-adicional">${{ mantenimiento.ingresoAdicional || 0 | number:'1.0-0' }}</td>
+                <td class="ingreso-neto">${{ mantenimiento.ingresoNeto || 0 | number:'1.0-0' }}</td>
             </tr>
           </tbody>
         </table>
@@ -85,7 +94,7 @@
     <div class="history-section">
       <h3>📈 Historial por Períodos</h3>
       <div class="weeks-grid">
-        <div class="week-card" *ngFor="let semana of historial.semanas" 
+        <div class="week-card" *ngFor="let semana of semanasPaginadas" 
              (click)="seleccionarSemana(semana)"
              [class.selected]="semanaSeleccionada?.semana === semana.semana">
           <div class="week-header">
@@ -95,7 +104,36 @@
           <div class="week-amount">
             <span class="amount-value">${{ semana.totalIngresos | number:'1.0-0' }}</span>
             <span class="maintenance-count">{{ semana.cantidadMantenimientos }} mantenimientos</span>
+            <div class="ganancias-netas-info">
+              <span class="ganancias-label">Ganancias Netas:</span>
+              <span class="ganancias-value">${{ semana.gananciasNetas | number:'1.0-0' }}</span>
+            </div>
           </div>
+        </div>
+      </div>
+      
+      <!-- Paginación -->
+      <div class="pagination-container" *ngIf="historial && historial.semanas.length > itemsPerPage">
+        <div class="pagination-info">
+          <span>Mostrando {{ startIndex + 1 }}-{{ endIndex }} de {{ historial.semanas.length }} períodos</span>
+        </div>
+        <div class="pagination-controls">
+          <button mat-button [disabled]="currentPage === 1" (click)="previousPage()">
+            <mat-icon>chevron_left</mat-icon>
+            Anterior
+          </button>
+          <div class="page-numbers">
+            <button mat-button 
+                    *ngFor="let page of getPageNumbers()" 
+                    [class.active]="page === currentPage"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          </div>
+          <button mat-button [disabled]="currentPage === totalPages" (click)="nextPage()">
+            Siguiente
+            <mat-icon>chevron_right</mat-icon>
+          </button>
         </div>
       </div>
     </div>

@@ -133,9 +133,14 @@ export class EgresosGestionComponent implements OnInit, AfterViewInit {
     ).subscribe({
       next: (egresos) => {
         console.log('Egresos recibidos en componente:', egresos);
-        this.dataSource.data = egresos;
         this.egresos = egresos;
+        this.dataSource.data = [...egresos]; // Forzar nueva referencia para detectar cambios
         this.loading = false;
+        
+        // Forzar actualización de la tabla
+        if (this.table) {
+          this.table.renderRows();
+        }
         
         if (egresos.length === 0) {
           this.snackBar.open('No se encontraron egresos. Puedes agregar nuevos egresos usando el botón "Nuevo Egreso".', 'Cerrar', { 
@@ -252,14 +257,26 @@ export class EgresosGestionComponent implements OnInit, AfterViewInit {
 
   deleteEgreso(egreso: EgresoDTO): void {
     if (confirm(`¿Estás seguro de que quieres eliminar el egreso "${egreso.concepto}"?`)) {
+      this.loading = true; // Mostrar loading durante la eliminación
+      
       this.egresoService.deleteEgreso(egreso.id).subscribe({
         next: () => {
           this.snackBar.open('Egreso eliminado exitosamente', 'Cerrar', { duration: 3000 });
-          this.loadEgresos();
+          // Actualizar inmediatamente la lista local
+          this.egresos = this.egresos.filter(e => e.id !== egreso.id);
+          this.dataSource.data = [...this.egresos];
+          
+          // Forzar actualización de la tabla
+          if (this.table) {
+            this.table.renderRows();
+          }
+          
+          this.loading = false;
         },
         error: (error) => {
           console.error('Error eliminando egreso:', error);
           this.snackBar.open('Error al eliminar el egreso', 'Cerrar', { duration: 3000 });
+          this.loading = false;
         }
       });
     }

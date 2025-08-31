@@ -18,6 +18,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -54,6 +55,7 @@ import { NumberFormatDirective } from '../../directives/number-format.directive'
     MatTabsModule,
     MatDialogModule,
     MatAutocompleteModule,
+    MatProgressSpinnerModule,
     FormsModule,
     ReactiveFormsModule,
     NumberFormatDirective
@@ -98,7 +100,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   mantenimientosCompletados: MantenimientoDTO[] = [];
   mantenimientosCancelados: MantenimientoDTO[] = [];
   
-  // Mantenimientos filtrados por búsqueda
+  // Estado de búsqueda
+  isSearching = false;
   mantenimientosProgramadosFiltrados: MantenimientoDTO[] = [];
   mantenimientosEnProcesoFiltrados: MantenimientoDTO[] = [];
   mantenimientosCompletadosFiltrados: MantenimientoDTO[] = [];
@@ -389,23 +392,26 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   aplicarFiltroBusqueda(): void {
     const searchTerm = this.searchTerm.toLowerCase().trim();
     
-    // Función para verificar si un mantenimiento coincide con el filtro
-    const coincideConFiltro = (mantenimiento: MantenimientoDTO): boolean => {
-      if (!searchTerm) return true;
-      
-      return mantenimiento.vehiculoPlaca.toLowerCase().includes(searchTerm) ||
-             mantenimiento.vehiculoMarca.toLowerCase().includes(searchTerm) ||
-             mantenimiento.clienteNombre.toLowerCase().includes(searchTerm) ||
-             mantenimiento.tipoMantenimiento.toLowerCase().includes(searchTerm) ||
-             mantenimiento.estado.toLowerCase().includes(searchTerm) ||
-             (mantenimiento.mecanico ? mantenimiento.mecanico.toLowerCase().includes(searchTerm) : false);
-    };
-    
-    // Aplicar filtro a cada categoría
-    this.mantenimientosProgramadosFiltrados = this.mantenimientosProgramados.filter(coincideConFiltro);
-    this.mantenimientosEnProcesoFiltrados = this.mantenimientosEnProceso.filter(coincideConFiltro);
-    this.mantenimientosCompletadosFiltrados = this.mantenimientosCompletados.filter(coincideConFiltro);
-    this.mantenimientosCanceladosFiltrados = this.mantenimientosCancelados.filter(coincideConFiltro);
+    if (searchTerm) {
+      // Si hay término de búsqueda, usar el backend
+      this.isSearching = true;
+      this.mantenimientoService.buscarMantenimientos(searchTerm).subscribe({
+        next: (mantenimientos) => {
+          this.dataSource.data = mantenimientos;
+          this.categorizarMantenimientos(mantenimientos);
+          this.calcularEstadisticas(mantenimientos);
+          this.isSearching = false;
+        },
+        error: (error) => {
+          console.error('Error en la búsqueda:', error);
+          this.snackBar.open('Error al realizar la búsqueda', 'Cerrar', { duration: 3000 });
+          this.isSearching = false;
+        }
+      });
+    } else {
+      // Si no hay término de búsqueda, recargar todos los mantenimientos
+      this.loadMantenimientos();
+    }
   }
 
   applyFilter(): void {
@@ -414,7 +420,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.aplicarFiltroBusqueda();
+    this.isSearching = false;
+    this.loadMantenimientos();
   }
 
   openDialog(mantenimiento?: MantenimientoDTO): void {

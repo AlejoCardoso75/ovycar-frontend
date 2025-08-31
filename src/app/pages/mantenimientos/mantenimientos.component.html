@@ -73,6 +73,12 @@
               <mat-icon>clear</mat-icon>
             </button>
           </mat-form-field>
+          
+          <!-- Indicador de búsqueda -->
+          <div *ngIf="isSearching" class="search-indicator">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Buscando...</span>
+          </div>
         </div>
         
         <div class="actions-section">

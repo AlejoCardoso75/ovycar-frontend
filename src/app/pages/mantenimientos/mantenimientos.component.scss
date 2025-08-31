@@ -66,8 +66,24 @@
 }
 
 .search-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   flex: 1;
-  max-width: 400px;
+  
+  .search-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 14px;
+    
+    mat-spinner {
+      ::ng-deep .mat-mdc-progress-spinner-circle {
+        stroke: #666;
+      }
+    }
+  }
 }
 
 .actions-section {

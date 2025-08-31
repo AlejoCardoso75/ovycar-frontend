@@ -388,18 +388,8 @@
           <div class="form-section">
             <h3 class="section-title">Costos y Repuestos</h3>
             
+            <!-- Primera fila: Proveedor de Repuestos -->
             <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Costo Total</mat-label>
-                <input matInput 
-                       [value]="costoTotalCalculado" 
-                       placeholder="0" 
-                       readonly
-                       [class.calculated]="true">
-                <mat-icon matSuffix>calculate</mat-icon>
-                <mat-hint>Suma automática de todos los costos</mat-hint>
-              </mat-form-field>
-
               <mat-form-field appearance="outline">
                 <mat-label>Proveedor de Repuestos *</mat-label>
                 <mat-select formControlName="proveedorRepuestos" (selectionChange)="onProveedorRepuestosChange($event)">
@@ -410,9 +400,17 @@
                   Debe especificar quién proporciona los repuestos
                 </mat-error>
               </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Garantía</mat-label>
+                <input matInput 
+                       formControlName="garantia" 
+                       placeholder="Sin garantía">
+                <mat-icon matSuffix>verified</mat-icon>
+              </mat-form-field>
             </div>
 
-                        <!-- Campos específicos para taller -->
+            <!-- Campos específicos para taller -->
             <div *ngIf="mantenimientoForm.get('proveedorRepuestos')?.value === 'taller'">
               <div class="form-row">
                 <mat-form-field appearance="outline">
@@ -479,17 +477,17 @@
               </mat-form-field>
             </div>
 
+            <!-- Costo Total al final -->
             <div class="form-row">
               <mat-form-field appearance="outline">
-                <mat-label>Garantía</mat-label>
+                <mat-label>Costo Total</mat-label>
                 <input matInput 
-                       formControlName="garantia" 
-                       placeholder="Sin garantía"
-                       readonly>
-                <mat-icon matSuffix>security</mat-icon>
-                <mat-error *ngIf="mantenimientoForm.get('garantia')?.hasError('required')">
-                  {{ getErrorMessage('garantia') }}
-                </mat-error>
+                       [value]="costoTotalCalculado" 
+                       placeholder="0" 
+                       readonly
+                       [class.calculated]="true">
+                <mat-icon matSuffix>calculate</mat-icon>
+                <mat-hint>Suma automática de todos los costos</mat-hint>
               </mat-form-field>
             </div>
           </div>

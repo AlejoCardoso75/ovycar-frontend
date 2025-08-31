@@ -89,7 +89,7 @@ export class GananciaSocioComponent implements OnInit {
   getFormattedSemana(semana: string): string {
     if (!semana) return '';
     const [year, week] = semana.split('-');
-    return `Semana ${week} del ${year}`;
+    return `${year}`;
   }
 
   // Métodos de paginación

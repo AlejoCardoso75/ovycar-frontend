@@ -100,6 +100,13 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   mantenimientosCompletados: MantenimientoDTO[] = [];
   mantenimientosCancelados: MantenimientoDTO[] = [];
   
+  // Lazy Loading de datos
+  // pageSize = 20;
+  // currentPage = 0;
+  // totalItems = 0;
+  // loading = false;
+  // allDataLoaded = false;
+
   // Estado de búsqueda
   isSearching = false;
   mantenimientosProgramadosFiltrados: MantenimientoDTO[] = [];
@@ -178,6 +185,40 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
       }
     });
   }
+  
+  // Remover este método que no es necesario
+  // loadMoreMantenimientos(): void {
+  //   if (this.loading || this.allDataLoaded) {
+  //     return;
+  //   }
+    
+  //   this.loading = true;
+  //   this.currentPage++;
+    
+  //   // Simular carga progresiva (en un caso real, esto sería una llamada al backend)
+  //   setTimeout(() => {
+  //     this.mantenimientoService.getAllMantenimientos().subscribe({
+  //       next: (mantenimientos) => {
+  //         // Agregar nuevos datos a los existentes
+  //         const newData = [...this.dataSource.data, ...mantenimientos];
+  //         this.dataSource.data = newData;
+  //         this.categorizarMantenimientos(newData);
+  //         this.calcularEstadisticas(newData);
+          
+  //         this.loading = false;
+          
+  //         // Verificar si se cargaron todos los datos
+  //         if (mantenimientos.length < this.pageSize) {
+  //           this.allDataLoaded = true;
+  //         }
+  //       },
+  //       error: (error) => {
+  //         console.error('Error cargando más mantenimientos:', error);
+  //         this.loading = false;
+  //       }
+  //     });
+  //   }, 500); // Simular delay de red
+  // }
 
   loadVehiculos(): void {
     this.vehiculoService.getAllVehiculos().subscribe({

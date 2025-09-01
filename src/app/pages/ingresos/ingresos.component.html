@@ -64,8 +64,8 @@
                <th>Vehículo</th>
                <th>Mecánico</th>
                <th>Ingreso Bruto</th>
-                               <th>Pago a Mano de Obra</th>
-                <th>Pago Repuesto</th>
+              <th>Pago a Mano de Obra</th>
+                <th>80% Pago Repuestos</th>
                 <th>Ganancia Mano de Obra</th>
                 <th>20% Repuesto</th>
                 <th>Ingreso Adicional</th>
@@ -102,12 +102,9 @@
             <span class="week-dates">{{ getFormattedDateRange(semana.fechaInicio, semana.fechaFin) }}</span>
           </div>
           <div class="week-amount">
-            <span class="amount-value">${{ semana.totalIngresos | number:'1.0-0' }}</span>
+            <span class="ganancias-label">Ganancias Netas:</span>
+            <span class="amount-value">${{ semana.gananciasNetas | number:'1.0-0' }}</span>
             <span class="maintenance-count">{{ semana.cantidadMantenimientos }} mantenimientos</span>
-            <div class="ganancias-netas-info">
-              <span class="ganancias-label">Ganancias Netas:</span>
-              <span class="ganancias-value">${{ semana.gananciasNetas | number:'1.0-0' }}</span>
-            </div>
           </div>
         </div>
       </div>

@@ -37,11 +37,6 @@
         <span matListItemTitle>Ingresos</span>
       </a>
       
-      <a mat-list-item routerLink="/ganancia-socio" routerLinkActive="active">
-        <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
-        <span matListItemTitle>Ganancia por Socio</span>
-      </a>
-      
       <!-- Menú desplegable de Egresos -->
       <mat-expansion-panel class="egresos-menu" [expanded]="false">
         <mat-expansion-panel-header>
@@ -61,6 +56,13 @@
           <span matListItemTitle>Gestión Egresos</span>
         </a>
       </mat-expansion-panel>
+
+
+            
+      <a mat-list-item routerLink="/ganancia-socio" routerLinkActive="active">
+        <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
+        <span matListItemTitle>Ganancia por Socio</span>
+      </a>
       
       <a mat-list-item routerLink="/perfil" routerLinkActive="active">
         <mat-icon matListItemIcon>person</mat-icon>

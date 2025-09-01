@@ -50,7 +50,7 @@
         </div>
                  <div class="stat-item ganancia-socio">
            <span class="stat-value">${{ semanaSeleccionada.gananciaSocio | number:'1.0-0' }}</span>
-           <span class="stat-label">Ganancia por Socio</span>
+           <span class="stat-label">Ganancia</span>
          </div>
        </div>
        
@@ -74,12 +74,6 @@
           <div class="week-amount">
             <span class="amount-value">${{ semana.gananciaSocio | number:'1.0-0' }}</span>
             <span class="maintenance-count">{{ semana.cantidadMantenimientos }} mantenimientos</span>
-            <div class="ganancia-socio-info">
-              <span class="ganancia-label">Ingresos Netos:</span>
-              <span class="ganancia-value">${{ semana.ingresosNetos | number:'1.0-0' }}</span>
-              <span class="egresos-label">Egresos:</span>
-              <span class="egresos-value">${{ semana.egresos | number:'1.0-0' }}</span>
-            </div>
           </div>
         </div>
       </div>

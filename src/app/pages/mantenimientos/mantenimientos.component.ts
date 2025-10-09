@@ -137,8 +137,6 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.loadMantenimientos();
     this.loadVehiculos();
-    // Inicializar las listas filtradas
-    this.aplicarFiltroBusqueda();
     
     // Suscribirse a cambios en valorRepuestos para actualización en tiempo real
     this.mantenimientoForm.get('valorRepuestos')?.valueChanges.subscribe(() => {
@@ -385,8 +383,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     this.mantenimientosCompletados = mantenimientos.filter(m => m.estado === EstadoMantenimiento.COMPLETADO);
     this.mantenimientosCancelados = mantenimientos.filter(m => m.estado === EstadoMantenimiento.CANCELADO);
     
-    // Aplicar filtro de búsqueda a todas las categorías
-    this.aplicarFiltroBusqueda();
+    // Aplicar filtro de búsqueda local a todas las categorías
+    this.aplicarFiltroBusquedaLocal();
   }
 
   calcularEstadisticas(mantenimientos: MantenimientoDTO[]): void {
@@ -450,8 +448,40 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
         }
       });
     } else {
-      // Si no hay término de búsqueda, recargar todos los mantenimientos
-      this.loadMantenimientos();
+      // Si no hay término de búsqueda, aplicar filtro local
+      this.aplicarFiltroBusquedaLocal();
+    }
+  }
+
+  aplicarFiltroBusquedaLocal(): void {
+    const searchTerm = this.searchTerm.toLowerCase().trim();
+    
+    if (searchTerm) {
+      // Aplicar filtro local a los datos ya cargados
+      const allMantenimientos = this.mantenimientosProgramados.concat(
+        this.mantenimientosEnProceso,
+        this.mantenimientosCompletados,
+        this.mantenimientosCancelados
+      );
+      
+      const mantenimientosFiltrados = allMantenimientos.filter(m => 
+        m.tipoMantenimiento.toLowerCase().includes(searchTerm) ||
+        m.descripcion?.toLowerCase().includes(searchTerm) ||
+        m.vehiculoPlaca.toLowerCase().includes(searchTerm) ||
+        m.clienteNombre.toLowerCase().includes(searchTerm) ||
+        m.mecanico?.toLowerCase().includes(searchTerm)
+      );
+      
+      this.dataSource.data = mantenimientosFiltrados;
+      this.calcularEstadisticas(mantenimientosFiltrados);
+    } else {
+      // Si no hay término de búsqueda, mostrar todos los datos
+      this.dataSource.data = this.mantenimientosProgramados.concat(
+        this.mantenimientosEnProceso,
+        this.mantenimientosCompletados,
+        this.mantenimientosCancelados
+      );
+      this.calcularEstadisticas(this.dataSource.data);
     }
   }
 
@@ -462,7 +492,7 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   clearSearch(): void {
     this.searchTerm = '';
     this.isSearching = false;
-    this.loadMantenimientos();
+    this.aplicarFiltroBusquedaLocal();
   }
 
   openDialog(mantenimiento?: MantenimientoDTO): void {

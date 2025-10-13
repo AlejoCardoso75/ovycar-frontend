@@ -1,0 +1,16 @@
+services:
+  # Frontend Angular
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ovycar-frontend
+    ports:
+      - "80:80"
+    networks:
+      - ovycar-network
+    restart: unless-stopped
+
+networks:
+  ovycar-network:
+    driver: bridge

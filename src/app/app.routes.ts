@@ -2,8 +2,11 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  
+  {
+    path: '',
+    loadComponent: () => import('./pages/welcome/welcome.component').then(m => m.WelcomeComponent)
+  },
+
   // Login - Standalone Component
   { 
     path: 'login', 
@@ -94,6 +97,6 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   
-  // Ruta de fallback
-  { path: '**', redirectTo: '/dashboard' }
+  // Ruta de fallback (invitados ven bienvenida; si ya hay sesión, WelcomeComponent redirige al dashboard)
+  { path: '**', redirectTo: '/' }
 ];

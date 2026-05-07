@@ -52,7 +52,7 @@ export class AuthService {
     console.log('Ejecutando logout...');
     this.clearUserSession();
     // Forzar recarga de la página para limpiar completamente el estado
-    window.location.href = '/login';
+    window.location.href = '/';
   }
 
   validateToken(): Observable<boolean> {

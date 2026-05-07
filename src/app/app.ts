@@ -53,8 +53,11 @@ export class AppComponent {
   }
 
   private checkAuthentication(): void {
-    // Si no está autenticado y no está en login, redirigir
-    if (!this.authService.isAuthenticated() && this.router.url !== '/login') {
+    const path = this.router.url.split('?')[0];
+    const publicPaths = ['/login', '/'];
+    const isPublic = publicPaths.includes(path);
+
+    if (!this.authService.isAuthenticated() && !isPublic) {
       this.router.navigate(['/login']);
     }
     

@@ -3,8 +3,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  /* Fondo neutro (sin azul/morado saturado) */
+  background-color: #eceff1;
+  background-image:
+    radial-gradient(ellipse 120% 80% at 85% -5%, rgba(255, 255, 255, 0.65) 0%, transparent 55%),
+    radial-gradient(ellipse 90% 55% at 0% 100%, rgba(255, 255, 255, 0.45) 0%, transparent 50%),
+    linear-gradient(168deg, #f5f6f8 0%, #e8eaed 48%, #dfe3e6 100%);
+}
+
+.back-row {
+  margin: -8px 0 12px -12px;
+
+  .back-home {
+    color: #667eea;
+    font-weight: 500;
+  }
+
+  mat-icon {
+    vertical-align: middle;
+    margin-right: 4px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .login-card {

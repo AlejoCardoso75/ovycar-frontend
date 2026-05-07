@@ -1,0 +1,254 @@
+<div class="garage" id="inicio">
+  <!-- Franja superior tipo taller / seguridad -->
+  <div class="safety-stripe" aria-hidden="true"></div>
+  <div class="prebar">
+    <span class="prebar-item">
+      <mat-icon>schedule</mat-icon>
+      Lun — Sáb · 8:00 — 18:00
+    </span>
+    <span class="prebar-item prebar-center">
+      <mat-icon>build_circle</mat-icon>
+      Taller automotriz · Diagnóstico · Mantenimiento · Reparación
+    </span>
+    <span class="prebar-item prebar-glow">
+      <mat-icon>verified</mat-icon>
+      Repuestos originales y alternativos de calidad
+    </span>
+  </div>
+
+  <header class="garage-header">
+    <div class="header-shell">
+      <a routerLink="/" class="brand-block" aria-label="Talleres Oviedo">
+        <div class="brand-ring">
+          <img src="assets/images/logo-taller.png" alt="" class="brand-img" />
+        </div>
+        <div class="brand-titles">
+          <span class="brand-kicker">Taller automotriz</span>
+          <span class="brand-name">Talleres <em>Oviedo</em></span>
+        </div>
+      </a>
+
+      <nav class="garage-nav" aria-label="Secciones">
+        <a class="gn-link" href="#inicio" (click)="$event.preventDefault(); scrollTo('inicio')">Inicio</a>
+        <a class="gn-link" href="#servicios" (click)="$event.preventDefault(); scrollTo('servicios')">Servicios</a>
+        <a class="gn-link" href="#nosotros" (click)="$event.preventDefault(); scrollTo('nosotros')">Nosotros</a>
+        <a class="gn-link" href="#contacto" (click)="$event.preventDefault(); scrollTo('contacto')">Ubicación</a>
+      </nav>
+
+      <div class="header-tools">
+        <a class="tool-btn wa" [href]="whatsappLink" target="_blank" rel="noopener noreferrer" title="WhatsApp" aria-label="WhatsApp">
+          <img src="assets/images/whatsapp.svg" alt="" class="wpp-icon" />
+        </a>
+        <a class="btn-garage-outline" [href]="'tel:+57' + telefonoTaller.replaceAll(' ', '')">
+          <mat-icon>call</mat-icon>
+          {{ telefonoTaller }}
+        </a>
+        <button mat-flat-button type="button" class="btn-garage-login" (click)="goToLogin()">
+          <mat-icon>login</mat-icon>
+          Iniciar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero: sensación de box / pit lane -->
+  <section class="pit-hero">
+    <div class="pit-bg" role="presentation"></div>
+    <div class="pit-grid" role="presentation"></div>
+    <div class="pit-glow" role="presentation"></div>
+
+    <div class="pit-inner">
+      <div class="pit-copy">
+        <h1 class="pit-title">
+          Confianza en cada <span class="chrome">revisión</span>
+          <br />
+          y calidad que se <span class="stripe-text">nota</span>
+        </h1>
+        <p class="pit-lead">
+          En <strong>Talleres Oviedo</strong> cuidamos tu vehículo con un proceso claro:
+          diagnóstico responsable, presupuesto antes de intervenir y entrega con check-list.
+        </p>
+        <div class="pit-actions">
+          <button type="button" class="btn-pit-primary" (click)="scrollTo('servicios')">
+            <mat-icon>handyman</mat-icon>
+            Ver servicios
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Banda decorativa rodadura -->
+  <div class="tread-band" aria-hidden="true"></div>
+
+
+  <!-- Carrusel horizontal de marcas -->
+  <section class="marcas-section" id="marcas">
+    <div class="marcas-inner">
+      <p class="marcas-kicker">Multimarca</p>
+      <h2 class="marcas-heading">Marcas que atendemos</h2>
+      <p class="marcas-intro">Diagnóstico, mantenimiento y reparación con protocolo claro para distintos fabricantes.</p>
+      <div class="marcas-marquee" role="region" aria-label="Carrusel de marcas de vehículos atendidas">
+        <div class="marcas-track">
+          <div class="marcas-strip">
+            <div class="marca-card" *ngFor="let m of marcasAtendidas">
+              <div class="marca-logo-wrap">
+                <img class="marca-logo" [src]="m.logo" [alt]="m.name" width="88" height="88" loading="lazy" />
+              </div>
+              <span class="marca-caption">{{ m.name }}</span>
+            </div>
+          </div>
+          <div class="marcas-strip marcas-strip--dup" aria-hidden="true">
+            <div class="marca-card" *ngFor="let m of marcasAtendidas">
+              <div class="marca-logo-wrap">
+                <img class="marca-logo" [src]="m.logo" alt="" width="88" height="88" loading="lazy" />
+              </div>
+              <span class="marca-caption">{{ m.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- CTA promoción cambio de aceite -->
+    <div class="slant-cta">
+      <div class="slant-inner">
+        <p class="slant-line">Promoción en cambio de aceite</p>
+        <p class="slant-strong">Por la compra de aceite y filtro con nosotros, el servicio de cambio de aceite <span class="slant-highlight">es gratis</span>.</p>
+      </div>
+    </div>
+
+  <!-- Servicios -->
+  <section class="svc-section" id="servicios">
+    <div class="svc-shell">
+      <header class="svc-head">
+        <span class="section-tag">SERVICIOS</span>
+        <h2 class="section-title">Servicios para tu <span>carro</span>, sin vueltas</h2>
+        <p class="section-sub">
+          Mecánica, diagnóstico y mantenimiento con atención detallista. Te explicamos el problema y la solución antes de hacer el trabajo.</p>
+      </header>
+
+      <div class="svc-grid">
+        <article class="svc-card" *ngFor="let s of serviciosRapidos">
+          <div class="svc-icon-wrap">
+            <mat-icon>{{ s.icon }}</mat-icon>
+          </div>
+          <h3 class="svc-label">{{ s.label }}</h3>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nosotros / Equipo -->
+  <section class="team-section" id="nosotros">
+    <div class="team-shell">
+      <div class="team-copy">
+        <span class="section-tag">NOSOTROS</span>
+        <h2 class="team-title">Un equipo cercano, un trabajo impecable</h2>
+        <p class="team-sub">
+          Más que “arreglar”, buscamos que entiendas qué pasó y qué se hizo. Trabajamos con orden, buenas prácticas y respeto por tu tiempo.
+        </p>
+        <ul class="team-points">
+          <li><mat-icon>check_circle</mat-icon> Recepción con inspección inicial y check-list</li>
+          <li><mat-icon>check_circle</mat-icon> Diagnóstico con evidencia y presupuesto antes de intervenir</li>
+          <li><mat-icon>check_circle</mat-icon> Entrega con verificación final y recomendaciones</li>
+        </ul>
+      </div>
+
+      <div class="team-media">
+        <img class="team-img" src="assets/images/equipo.png" alt="Equipo del taller" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Mitad texto / mitad imagen taller -->
+  <section class="bay-section" id="taller">
+    <div class="bay-photo" role="presentation"></div>
+    <div class="bay-copy">
+      <span class="section-tag light">EL TALLER</span>
+      <h2 class="bay-title">Un taller limpio, un diagnóstico claro</h2>
+      <ul class="bay-list">
+        <li><mat-icon>check_circle</mat-icon> Área de trabajo organizada por especialidad para atender más rápido.</li>
+        <li><mat-icon>check_circle</mat-icon> Órdenes digitalizadas: menos papeles, más trazabilidad.</li>
+        <li><mat-icon>check_circle</mat-icon> Estados del servicio claros: recepción, diagnóstico, reparación y entrega.</li>
+        <li><mat-icon>check_circle</mat-icon> Seguridad y orden: cuidamos tu vehículo como si fuera propio.</li>
+      </ul>
+      <div class="bay-cta">
+        <button type="button" class="btn-pit-primary" (click)="scrollTo('contacto')">
+          <mat-icon>pin_drop</mat-icon>
+          Cómo llegar
+        </button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Contacto (estilo referencia: 2 columnas + card de info) -->
+  <section class="contact-section" id="contacto">
+    <div class="contact-shell">
+      <div class="contact-left">
+        <span class="section-tag">CONTACTO</span>
+        <h2 class="contact-title">¿Necesitas <span>revisión</span> o diagnóstico?</h2>
+        <p class="contact-sub">
+          Escríbenos. Te orientamos y agendamos según disponibilidad. Respuesta rápida por WhatsApp.
+        </p>
+        <a class="contact-cta" [href]="whatsappLink" target="_blank" rel="noopener noreferrer">
+          <img src="assets/images/whatsapp.svg" alt="" class="wpp-icon" />
+          Escribir por WhatsApp
+        </a>
+        <p class="contact-note">Respuesta en menos de 24 horas · Atención Lun—Sáb 8:00—18:00</p>
+      </div>
+
+      <div class="contact-right">
+        <div class="contact-card">
+          <h3 class="contact-card-title">Información de contacto</h3>
+
+          <div class="contact-item">
+            <div class="contact-ico"><mat-icon>place</mat-icon></div>
+            <div class="contact-txt">
+              <div class="contact-k">Dirección</div>
+              <div class="contact-v">Cra. 15 # 1D-7 · Neiva, Huila</div>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-ico"><mat-icon>schedule</mat-icon></div>
+            <div class="contact-txt">
+              <div class="contact-k">Horario</div>
+              <div class="contact-v">Lunes a Sábado · 8:00 am — 6:00 pm</div>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-ico"><mat-icon>call</mat-icon></div>
+            <div class="contact-txt">
+              <div class="contact-k">Teléfono</div>
+              <div class="contact-v"><a [href]="'tel:+57' + telefonoTaller.replaceAll(' ', '')">{{ telefonoTaller }}</a></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="map-block">
+          <iframe
+            title="Mapa de ubicación - Talleres Oviedo"
+            class="map-frame"
+            src="https://www.google.com/maps?q=Cra.%2015%20%231D-7%2C%20Neiva%2C%20Huila&output=embed"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="garage-footer">
+    <div class="footer-mini">
+      <span>Talleres Oviedo</span>
+      <span class="dot">·</span>
+      <span>© 2026 Todos los derechos reservados</span>
+    </div>
+  </footer>
+</div>

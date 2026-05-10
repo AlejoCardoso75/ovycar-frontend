@@ -86,6 +86,11 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  isAdmin(): boolean {
+    const user = this.currentUserSubject.value;
+    return user?.rol?.toUpperCase() === 'ADMIN';
+  }
+
   isTokenExpired(): boolean {
     const token = this.getToken();
     if (!token) {

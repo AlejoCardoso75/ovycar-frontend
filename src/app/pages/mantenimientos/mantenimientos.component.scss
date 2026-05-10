@@ -219,14 +219,28 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1001;
-  max-width: 90vw;
+  width: min(1200px, 96vw);
+  max-width: 96vw;
   max-height: 90vh;
   overflow-y: auto;
 }
 
+/* Centrado respecto al área de contenido (derecha del menú lateral), igual que modo `side`
+   vs `Breakpoints.Handset` (Angular CDK): en handset el menú es overlay → centro en pantalla completa */
+@media (min-width: 960px), ((orientation: portrait) and (min-width: 600px)) {
+  .dialog-container {
+    /* Centro geométrico del tramo [sidenav … borde derecho]: (sid + (vw-sid)/2) = 50vw + sid/2 */
+    left: calc(50vw + var(--ovycar-sidenav-width, 298px) / 2);
+    width: min(1200px, calc(100vw - var(--ovycar-sidenav-width, 298px) - 32px));
+    max-width: calc(100vw - var(--ovycar-sidenav-width, 298px) - 32px);
+  }
+}
+
 .dialog-card {
-  min-width: 700px;
-  max-width: 900px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: none;
   border-radius: 12px;
 }
 

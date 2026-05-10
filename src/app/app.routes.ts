@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -76,18 +77,18 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   
-  // Facturas - Standalone Component
-  {
-    path: 'facturas',
-    loadComponent: () => import('./pages/facturas/facturas.component').then(m => m.FacturasComponent),
-    canActivate: [AuthGuard]
-  },
-  
   // Ganancia por Socio - Standalone Component
   {
     path: 'ganancia-socio',
     loadComponent: () => import('./pages/ganancia-socio/ganancia-socio.component').then(m => m.GananciaSocioComponent),
     canActivate: [AuthGuard]
+  },
+
+  // Mecánicos - Solo ADMIN
+  {
+    path: 'mecanicos',
+    loadComponent: () => import('./pages/mecanicos/mecanicos.component').then(m => m.MecanicosComponent),
+    canActivate: [AuthGuard, AdminGuard]
   },
   
   // Perfil - Standalone Component

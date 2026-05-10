@@ -23,13 +23,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { MantenimientoService } from '../../services/mantenimiento.service';
+import { MecanicoService } from '../../services/mecanico.service';
 import { ClienteService } from '../../services/cliente.service';
 import { VehiculoService } from '../../services/vehiculo.service';
 import { ConfirmationModalService } from '../../services/confirmation-modal.service';
 import { Mantenimiento, MantenimientoDTO, EstadoMantenimiento } from '../../models/mantenimiento.model';
 import { ClienteDTO } from '../../models/cliente.model';
 import { VehiculoDTO } from '../../models/vehiculo.model';
-import { DeleteInfo, FacturaInfo } from '../../models/delete-info.model';
+import { MecanicoDTO } from '../../models/mecanico.model';
 import { NumberFormatDirective } from '../../directives/number-format.directive';
 
 @Component({
@@ -93,6 +94,8 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     'Otros'
   ];
 
+  mecanicos: MecanicoDTO[] = [];
+
   // Filtros por estado
   selectedEstado: EstadoMantenimiento | 'TODOS' = 'TODOS';
   mantenimientosProgramados: MantenimientoDTO[] = [];
@@ -125,6 +128,7 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
 
   constructor(
     private mantenimientoService: MantenimientoService,
+    private mecanicoService: MecanicoService,
     private vehiculoService: VehiculoService,
     private confirmationModalService: ConfirmationModalService,
     private snackBar: MatSnackBar,
@@ -137,10 +141,15 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.loadMantenimientos();
     this.loadVehiculos();
+    this.loadMecanicos();
     
     // Suscribirse a cambios en valorRepuestos para actualización en tiempo real
     this.mantenimientoForm.get('valorRepuestos')?.valueChanges.subscribe(() => {
       // Forzar detección de cambios para actualizar el campo calculado
+      this.cdr.detectChanges();
+    });
+
+    this.mantenimientoForm.get('mecanicoId')?.valueChanges.subscribe(() => {
       this.cdr.detectChanges();
     });
   }
@@ -164,9 +173,21 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
       costoManoObra: ['', [Validators.min(0)]],
       valorRepuestos: ['', [Validators.min(0)]],
       costoAdicionales: ['', [Validators.min(0)]],
-      mecanico: ['', [Validators.required]],
+      mecanicoId: [null, [Validators.required]],
       proveedorRepuestos: ['', [Validators.required]],
       garantia: ['Sin garantía']
+    });
+  }
+
+  loadMecanicos(): void {
+    this.mecanicoService.getMecanicosActivos().subscribe({
+      next: (mecanicos) => {
+        this.mecanicos = mecanicos;
+      },
+      error: (error) => {
+        console.error('Error cargando mecánicos:', error);
+        this.snackBar.open('Error al cargar los mecánicos', 'Cerrar', { duration: 3000 });
+      }
     });
   }
 
@@ -310,6 +331,10 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  onMecanicoChange(): void {
+    this.cdr.detectChanges();
+  }
+
   calcularManoObra(): string {
     const valorRepuestos = this.mantenimientoForm.get('valorRepuestos')?.value || 0;
     
@@ -342,6 +367,22 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
     }
     
     return total.toLocaleString('en-US');
+  }
+
+  get porcentajeMecanicoSeleccionado(): number {
+    const mecanicoId = this.mantenimientoForm.get('mecanicoId')?.value;
+    if (!mecanicoId) {
+      return 0;
+    }
+    const config = this.mecanicos.find(m => m.id === Number(mecanicoId));
+    return config?.porcentajeGanancia ?? 0;
+  }
+
+  get gananciaMecanicoCalculada(): string {
+    const costoManoObra = this.mantenimientoForm.get('costoManoObra')?.value || 0;
+    const porcentaje = this.porcentajeMecanicoSeleccionado;
+    const ganancia = costoManoObra * porcentaje;
+    return ganancia.toLocaleString('en-US');
   }
 
   onProveedorRepuestosChange(event: any): void {
@@ -518,7 +559,7 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
         costoManoObra: mantenimiento.costoManoObra,
         valorRepuestos: mantenimiento.valorRepuestos,
         costoAdicionales: mantenimiento.costoAdicionales,
-        mecanico: mantenimiento.mecanico || '',
+        mecanicoId: mantenimiento.mecanicoId ?? null,
         proveedorRepuestos: mantenimiento.proveedorRepuestos || 'taller',
         garantia: mantenimiento.garantia || 'Sin garantía'
       });
@@ -572,7 +613,7 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           costoManoObra: mantenimientoData.costoManoObra,
           valorRepuestos: mantenimientoData.valorRepuestos,
           costoAdicionales: mantenimientoData.costoAdicionales,
-          mecanico: mantenimientoData.mecanico,
+          mecanicoId: mantenimientoData.mecanicoId,
           proveedorRepuestos: mantenimientoData.proveedorRepuestos,
           garantia: mantenimientoData.garantia
         };
@@ -602,7 +643,7 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
           costoManoObra: mantenimientoData.costoManoObra,
           valorRepuestos: mantenimientoData.valorRepuestos,
           costoAdicionales: mantenimientoData.costoAdicionales,
-          mecanico: mantenimientoData.mecanico,
+          mecanicoId: mantenimientoData.mecanicoId,
           proveedorRepuestos: mantenimientoData.proveedorRepuestos,
           garantia: mantenimientoData.garantia
         };
@@ -623,27 +664,12 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
   }
 
   deleteMantenimiento(mantenimiento: MantenimientoDTO): void {
-    // Obtener información detallada sobre la eliminación
-    this.mantenimientoService.getDeleteInfo(mantenimiento.id).subscribe({
-      next: (deleteInfo: DeleteInfo) => {
-        if (deleteInfo.canDelete) {
-          // Si se puede eliminar, mostrar modal de confirmación simple
-          this.confirmationModalService.confirmDelete(
-            mantenimiento.tipoMantenimiento, 
-            'mantenimiento'
-          ).subscribe(confirmed => {
-            if (confirmed) {
-              this.performDelete(mantenimiento.id);
-            }
-          });
-        } else {
-          // Si no se puede eliminar, mostrar modal con opciones de cascada
-          this.showDeleteOptionsWithModal(mantenimiento, deleteInfo);
-        }
-      },
-      error: (error) => {
-        console.error('Error obteniendo información de eliminación:', error);
-        this.snackBar.open('Error al verificar el mantenimiento', 'Cerrar', { duration: 3000 });
+    this.confirmationModalService.confirmDelete(
+      mantenimiento.tipoMantenimiento,
+      'mantenimiento'
+    ).subscribe(confirmed => {
+      if (confirmed) {
+        this.performDelete(mantenimiento.id);
       }
     });
   }
@@ -657,35 +683,6 @@ export class MantenimientosComponent implements OnInit, AfterViewInit {
       error: (error) => {
         console.error('Error eliminando mantenimiento:', error);
         this.snackBar.open('Error al eliminar el mantenimiento', 'Cerrar', { duration: 3000 });
-      }
-    });
-  }
-
-  private showDeleteOptionsWithModal(mantenimiento: MantenimientoDTO, deleteInfo: DeleteInfo): void {
-    // Mostrar modal con información detallada sobre las facturas asociadas
-    this.confirmationModalService.confirmDeleteWithFacturas(
-      mantenimiento.tipoMantenimiento,
-      deleteInfo.facturas || []
-    ).subscribe(confirmed => {
-      if (confirmed) {
-        this.performDeleteWithCascade(mantenimiento.id);
-      }
-    });
-  }
-
-  private performDeleteWithCascade(mantenimientoId: number): void {
-    this.mantenimientoService.deleteMantenimientoWithCascade(mantenimientoId).subscribe({
-      next: () => {
-        this.snackBar.open('Mantenimiento y facturas eliminados exitosamente', 'Cerrar', { duration: 3000 });
-        this.loadMantenimientos();
-      },
-      error: (error) => {
-        console.error('Error eliminando mantenimiento con cascada:', error);
-        let errorMessage = 'Error al eliminar el mantenimiento';
-        if (error.error && error.error.error) {
-          errorMessage = error.error.error;
-        }
-        this.snackBar.open(errorMessage, 'Cerrar', { duration: 5000 });
       }
     });
   }

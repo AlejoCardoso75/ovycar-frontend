@@ -29,4 +29,6 @@ export interface CreateEgresoDTO {
   categoria?: string;
   fechaEgreso?: Date;
   responsable?: string;
+  /** Solo en actualización: cambia activo y dispara auditoría de estado */
+  activo?: boolean;
 }

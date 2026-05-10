@@ -220,6 +220,7 @@ export class EgresosGestionComponent implements OnInit, AfterViewInit {
       };
 
       if (this.editingEgreso) {
+        egresoData.activo = this.editingEgreso.activo;
         // Actualizar egreso existente
         this.egresoService.updateEgreso(this.editingEgreso.id, egresoData).subscribe({
           next: (updatedEgreso) => {

@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { VehiculoService } from '../../services/vehiculo.service';
@@ -264,10 +265,20 @@ export class VehiculosComponent implements OnInit, AfterViewInit {
         },
         error: (error) => {
           console.error('Error eliminando vehículo:', error);
-          this.snackBar.open('Error al eliminar el vehículo', 'Cerrar', { duration: 3000 });
+          const errorMessage = this.getBackendErrorMessage(error, 'Error al eliminar el vehículo');
+          this.snackBar.open(errorMessage, 'Cerrar', { duration: 5000 });
         }
       });
     }
+  }
+
+  private getBackendErrorMessage(error: unknown, fallback: string): string {
+    const httpError = error as HttpErrorResponse;
+    const backendMessage = httpError?.error?.message;
+    if (typeof backendMessage === 'string' && backendMessage.trim().length > 0) {
+      return backendMessage;
+    }
+    return fallback;
   }
 
   closeDialog(): void {

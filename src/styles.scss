@@ -215,7 +215,7 @@ html, body {
   padding: 16px;
 }
 
-.producto-item, .factura-item, .mantenimiento-item {
+.producto-item, .mantenimiento-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -224,7 +224,7 @@ html, body {
   border-bottom: 1px solid #f0f0f0;
 }
 
-.producto-item:last-child, .factura-item:last-child, .mantenimiento-item:last-child {
+.producto-item:last-child, .mantenimiento-item:last-child {
   border-bottom: none;
 }
 
@@ -247,13 +247,13 @@ html, body {
   color: #666;
 }
 
-.factura-info, .mantenimiento-info {
+.mantenimiento-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.factura-monto, .mantenimiento-desc {
+.mantenimiento-desc {
   font-size: 0.9rem;
   color: #666;
 }

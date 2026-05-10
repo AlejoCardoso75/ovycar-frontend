@@ -63,22 +63,4 @@ export class ConfirmationModalService {
       details: `Esta acción eliminará también ${dependenciesCount} ${dependenciesType} asociados. Esta operación no se puede deshacer.`
     });
   }
-
-  confirmDeleteWithFacturas(
-    mantenimientoName: string, 
-    facturas: any[]
-  ): Observable<boolean> {
-    const facturasInfo = facturas.length > 0 ? 
-      `\n\nFacturas asociadas:\n${facturas.map(f => `- ${f.numeroFactura} (${f.estado}) - $${f.total}`).join('\n')}` : '';
-    
-    return this.confirm({
-      title: 'Confirmar eliminación de mantenimiento',
-      message: `¿Está seguro de que desea eliminar el mantenimiento "${mantenimientoName}"?`,
-      confirmText: 'Eliminar mantenimiento y facturas',
-      cancelText: 'Cancelar',
-      type: 'danger',
-      showDetails: true,
-      details: `Esta acción eliminará permanentemente el mantenimiento y todas sus ${facturas.length} factura(s) asociada(s).${facturasInfo}\n\nEsta operación no se puede deshacer.`
-    });
-  }
 }

@@ -5,6 +5,17 @@
   overflow: hidden;
 }
 
+/* Ancho del menú lateral (usado para centrar modales fijos en el área de contenido) */
+:root {
+  --ovycar-sidenav-width: 298px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --ovycar-sidenav-width: 300px;
+  }
+}
+
 .sidenav-container {
   height: 100vh;
 }
@@ -15,7 +26,7 @@
 }
 
 .sidenav {
-  width: 298px;
+  width: var(--ovycar-sidenav-width);
   background: white;
   border-right: 1px solid #e0e0e0;
   box-shadow: 2px 0 4px rgba(0,0,0,0.1);
@@ -234,10 +245,6 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .sidenav {
-    width: 300px;
-  }
-  
   .app-title {
     font-size: 1.1rem;
   }

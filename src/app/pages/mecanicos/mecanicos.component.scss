@@ -1,0 +1,70 @@
+.mecanicos-container {
+  padding: 16px;
+}
+
+.main-card {
+  .mat-mdc-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  mat-form-field {
+    flex: 1;
+    max-width: 380px;
+  }
+}
+
+.table-container {
+  overflow: auto;
+}
+
+.mecanicos-table {
+  width: 100%;
+}
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 999;
+}
+
+.dialog-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: min(92vw, 480px);
+}
+
+@media (min-width: 960px), ((orientation: portrait) and (min-width: 600px)) {
+  .dialog-container {
+    left: calc(50vw + var(--ovycar-sidenav-width, 298px) / 2);
+    width: min(480px, calc(100vw - var(--ovycar-sidenav-width, 298px) - 32px));
+  }
+}
+
+.dialog-card {
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

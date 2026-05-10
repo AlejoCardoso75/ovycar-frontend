@@ -13,8 +13,8 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./welcome.component.scss']
 })
 export class WelcomeComponent implements OnInit {
-  readonly telefonoTaller = '316 307 0025';
-  readonly whatsappLink = 'https://wa.me/573163070025';
+  readonly telefonoTaller = '311 224 0983';
+  readonly whatsappLink = 'https://wa.me/573112240983';
 
   /** Marcas habituales (logos SVG locales, basados en Simple Icons — MIT). */
   readonly marcasAtendidas = [

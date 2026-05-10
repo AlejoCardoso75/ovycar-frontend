@@ -20,7 +20,10 @@ export interface Mantenimiento {
   costoManoObra?: number;
   valorRepuestos?: number;
   costoAdicionales?: number;
+  mecanicoId?: number;
   mecanico?: string;
+  porcentajeMecanico?: number;
+  gananciaMecanico?: number;
   proveedorRepuestos?: string;
   garantia?: string;
 }
@@ -45,7 +48,10 @@ export interface MantenimientoDTO {
   costoManoObra?: number;
   valorRepuestos?: number;
   costoAdicionales?: number;
+  mecanicoId?: number;
   mecanico?: string;
+  porcentajeMecanico?: number;
+  gananciaMecanico?: number;
   proveedorRepuestos?: string;
   garantia?: string;
   fechaRegistro: string;

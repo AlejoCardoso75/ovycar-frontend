@@ -11,19 +11,17 @@ export interface DashboardResumen {
   mantenimientosEnProceso: number;
   productosStockBajo: number;
   productosSinStock: number;
-  facturasPendientes: number;
-  facturasVencidas: number;
 }
 
 export interface DashboardAlertas {
-  productosStockBajo: any[];
-  productosSinStock: any[];
-  facturasVencidas: any[];
-  mantenimientosProgramados: any[];
+  productosStockBajo: unknown[];
+  productosSinStock: unknown[];
+  mantenimientosProgramados: unknown[];
 }
 
+/** Totales de ingresos por mantenimientos en un rango de fechas (backend: /dashboard/estadisticas-ventas). */
 export interface EstadisticasVentas {
-  facturasPagadas: number;
+  ingresosRegistrados: number;
   montoTotal: number;
 }
 
@@ -36,7 +34,6 @@ export class DashboardService {
   constructor(private http: HttpClient) { }
 
   getResumen(): Observable<DashboardResumen> {
-    // Por ahora, devolver datos de ejemplo
     const resumen: DashboardResumen = {
       totalClientes: 25,
       totalVehiculos: 30,
@@ -44,11 +41,9 @@ export class DashboardService {
       mantenimientosProgramados: 5,
       mantenimientosEnProceso: 3,
       productosStockBajo: 8,
-      productosSinStock: 2,
-      facturasPendientes: 12,
-      facturasVencidas: 3
+      productosSinStock: 2
     };
-    
+
     return new Observable(observer => {
       setTimeout(() => {
         observer.next(resumen);
@@ -66,4 +61,4 @@ export class DashboardService {
       params: { fechaInicio, fechaFin }
     });
   }
-} 
+}

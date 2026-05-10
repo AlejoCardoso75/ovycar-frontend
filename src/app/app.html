@@ -26,6 +26,11 @@
         <mat-icon matListItemIcon>build</mat-icon>
         <span matListItemTitle>Mantenimientos</span>
       </a>
+
+      <a mat-list-item routerLink="/mecanicos" routerLinkActive="active" *ngIf="authService.isAdmin()">
+        <mat-icon matListItemIcon>engineering</mat-icon>
+        <span matListItemTitle>Mecánicos</span>
+      </a>
       
       <a mat-list-item routerLink="/productos" routerLinkActive="active">
         <mat-icon matListItemIcon>inventory</mat-icon>

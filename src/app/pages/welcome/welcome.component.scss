@@ -1192,10 +1192,6 @@ $marcas-strip-gap: 14px;
     padding-block: clamp(28px, 7vw, 44px);
     padding-inline: clamp(18px, 5vw, 28px);
   }
-
-  .bay-photo {
-    min-height: min(240px, 48vw);
-  }
 }
 
 .bay-photo {
@@ -1207,6 +1203,27 @@ $marcas-strip-gap: 14px;
     url('../../../assets/images/taller-foto.png')
       center / cover;
   filter: saturate(1.02) contrast(1.02);
+
+  @media (max-width: 900px) {
+    min-height: 0 !important;
+    /* Fondo claro donde no cubre contain (respeta proporción panoramic de la foto) */
+    aspect-ratio: 16 / 10;
+    filter: saturate(1.02) contrast(1.03);
+    background-color: var(--surface-3);
+    background-repeat: no-repeat;
+    background-image:
+      linear-gradient(155deg, rgba(255, 255, 255, 0.22) 0%, transparent 40%),
+      linear-gradient(180deg, rgba(247, 249, 251, 0.08) 0%, rgba(15, 23, 42, 0.09) 100%),
+      url('../../../assets/images/taller-foto.png');
+    background-size:
+      100% 100%,
+      100% 100%,
+      contain;
+    background-position:
+      0 0,
+      0 0,
+      center top;
+  }
 }
 
 .bay-copy {

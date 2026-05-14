@@ -1,10 +1,12 @@
-/* ——— Tema tranquilo con azul más vivo (acentos saturados sobre fondos claros) ——— */
+/* ——— Welcome: acentos rojo taller (conjunto con logo) ——— */
 :host {
   display: block;
-  --accent: #1577c9;
-  --accent-2: #2897e4;
-  --accent-soft: rgba(21, 119, 201, 0.14);
-  --accent-muted: #4a92c9;
+  --accent: #cf3e3e;
+  --accent-2: #e96556;
+  --accent-rgb: 207, 62, 62;
+  --accent-2-rgb: 233, 101, 86;
+  --accent-soft: rgba(207, 62, 62, 0.14);
+  --accent-muted: #b84949;
   --surface: #ffffff;
   --surface-2: #f3f5f7;
   --surface-3: #e8edf1;
@@ -23,12 +25,12 @@
 %garage-photo-frame {
   border-radius: var(--photo-frame-radius);
   overflow: hidden;
-  border: 1px solid rgba(21, 119, 201, 0.26);
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
   background-color: var(--surface);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.75) inset,
     0 2px 4px rgba(15, 23, 42, 0.04),
-    0 12px 28px rgba(21, 119, 201, 0.11),
+    0 12px 28px rgba(var(--accent-rgb), 0.11),
     0 26px 64px rgba(15, 23, 42, 0.1);
 }
 
@@ -37,8 +39,8 @@
   /* Base algo mayor: el resto usa rem desde la raíz; esto agranda textos heredados sin tamaño propio */
   font-size: 1.0625rem;
   background:
-    radial-gradient(1100px 420px at 15% -10%, rgba(40, 151, 228, 0.16) 0%, transparent 60%),
-    radial-gradient(900px 360px at 90% 10%, rgba(21, 119, 201, 0.13) 0%, transparent 55%),
+    radial-gradient(1100px 420px at 15% -10%, rgba(var(--accent-2-rgb), 0.16) 0%, transparent 60%),
+    radial-gradient(900px 360px at 90% 10%, rgba(var(--accent-rgb), 0.13) 0%, transparent 55%),
     var(--surface-2);
   color: var(--text);
   min-height: 100vh;
@@ -188,7 +190,7 @@
 
   &:hover {
     color: var(--accent);
-    background: linear-gradient(180deg, var(--accent-soft), rgba(21, 119, 201, 0.06));
+    background: linear-gradient(180deg, var(--accent-soft), rgba(var(--accent-rgb), 0.06));
   }
 }
 
@@ -267,7 +269,7 @@
   }
 
   &:hover {
-    border-color: rgba(21, 119, 201, 0.25);
+    border-color: rgba(var(--accent-rgb), 0.25);
     background: #f7fafc;
   }
 
@@ -313,7 +315,7 @@
   letter-spacing: 0.02em !important;
   text-transform: none !important;
   font-family: var(--font-body) !important;
-  box-shadow: 0 10px 22px rgba(21, 119, 201, 0.18) !important;
+  box-shadow: 0 10px 22px rgba(var(--accent-rgb), 0.18) !important;
 
   mat-icon {
     margin-right: 4px;
@@ -420,7 +422,7 @@
   text-transform: none;
   color: var(--accent);
   background: rgba(255, 255, 255, 0.62);
-  border: 1px solid rgba(21, 119, 201, 0.16);
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   margin-bottom: 18px;
 
@@ -502,7 +504,7 @@
   text-transform: none;
   color: #fff;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-  box-shadow: 0 12px 26px rgba(21, 119, 201, 0.18);
+  box-shadow: 0 12px 26px rgba(var(--accent-rgb), 0.18);
   transition:
     background 0.2s ease,
     box-shadow 0.2s ease;
@@ -515,7 +517,7 @@
 
   &:hover {
     background: linear-gradient(135deg, #2a557a 0%, #3973a0 100%);
-    box-shadow: 0 16px 34px rgba(21, 119, 201, 0.22);
+    box-shadow: 0 16px 34px rgba(var(--accent-rgb), 0.22);
   }
 }
 
@@ -546,7 +548,7 @@
   }
 
   &:hover {
-    border-color: rgba(21, 119, 201, 0.22);
+    border-color: rgba(var(--accent-rgb), 0.22);
     background: rgba(255, 255, 255, 0.9);
   }
 }
@@ -884,7 +886,7 @@ $marcas-strip-gap: 14px;
   padding: 6px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(21, 119, 201, 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
 }
 
 .section-title {
@@ -952,8 +954,8 @@ $marcas-strip-gap: 14px;
   border-radius: 16px;
   overflow: hidden;
   background:
-    radial-gradient(100% 90% at 0% -10%, rgba(40, 151, 228, 0.12), transparent 55%),
-    radial-gradient(80% 60% at 100% 100%, rgba(21, 119, 201, 0.06), transparent 50%),
+    radial-gradient(100% 90% at 0% -10%, rgba(var(--accent-2-rgb), 0.12), transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, rgba(var(--accent-rgb), 0.06), transparent 50%),
     linear-gradient(160deg, #ffffff 0%, #f4f7fb 42%, #e9f0f6 100%);
   border: 1px solid rgba(15, 23, 42, 0.09);
   box-shadow:
@@ -979,7 +981,7 @@ $marcas-strip-gap: 14px;
     transition: opacity 0.28s ease;
     z-index: 0;
     pointer-events: none;
-    box-shadow: 3px 0 14px rgba(21, 119, 201, 0.25);
+    box-shadow: 3px 0 14px rgba(var(--accent-rgb), 0.25);
   }
 
   /* Brillo tipo “bisel” inferior */
@@ -993,9 +995,9 @@ $marcas-strip-gap: 14px;
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(21, 119, 201, 0.22) 20%,
-      rgba(40, 151, 228, 0.35) 50%,
-      rgba(21, 119, 201, 0.22) 80%,
+      rgba(var(--accent-rgb), 0.22) 20%,
+      rgba(var(--accent-2-rgb), 0.35) 50%,
+      rgba(var(--accent-rgb), 0.22) 80%,
       transparent
     );
     opacity: 0.85;
@@ -1005,10 +1007,10 @@ $marcas-strip-gap: 14px;
 
   &:hover {
     transform: translateY(-6px);
-    border-color: rgba(21, 119, 201, 0.28);
+    border-color: rgba(var(--accent-rgb), 0.28);
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.95) inset,
-      0 22px 50px rgba(21, 119, 201, 0.14),
+      0 22px 50px rgba(var(--accent-rgb), 0.14),
       0 10px 24px rgba(15, 23, 42, 0.1);
 
     &::before {
@@ -1017,14 +1019,14 @@ $marcas-strip-gap: 14px;
 
     .svc-icon-wrap {
       transform: scale(1.05);
-      border-color: rgba(21, 119, 201, 0.28);
+      border-color: rgba(var(--accent-rgb), 0.28);
       box-shadow:
-        0 6px 16px rgba(21, 119, 201, 0.18),
+        0 6px 16px rgba(var(--accent-rgb), 0.18),
         0 1px 0 rgba(255, 255, 255, 0.95) inset;
 
       mat-icon {
         color: var(--accent);
-        filter: drop-shadow(0 1px 2px rgba(21, 119, 201, 0.2));
+        filter: drop-shadow(0 1px 2px rgba(var(--accent-rgb), 0.2));
       }
     }
 
@@ -1045,9 +1047,9 @@ $marcas-strip-gap: 14px;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  border: 1px solid rgba(21, 119, 201, 0.16);
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
   box-shadow:
-    0 4px 14px rgba(21, 119, 201, 0.12),
+    0 4px 14px rgba(var(--accent-rgb), 0.12),
     0 1px 3px rgba(255, 255, 255, 0.9) inset;
   transition:
     transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1182,10 +1184,17 @@ $marcas-strip-gap: 14px;
 @media (max-width: 900px) {
   .bay-section {
     grid-template-columns: 1fr;
+    gap: clamp(18px, 4vw, 28px);
   }
-  .bay-photo {
-    min-height: min(260px, 52vw) !important;
+
+  .bay-copy {
     order: -1;
+    padding-block: clamp(28px, 7vw, 44px);
+    padding-inline: clamp(18px, 5vw, 28px);
+  }
+
+  .bay-photo {
+    min-height: min(240px, 48vw);
   }
 }
 
@@ -1259,8 +1268,8 @@ $marcas-strip-gap: 14px;
   padding-right: var(--welcome-gutter);
   padding-left: calc(var(--welcome-gutter) + 14px); /* hueco después de la barra lateral */
   background:
-    radial-gradient(ellipse 820px 200px at 12% -20%, rgba(40, 151, 228, 0.18), transparent 55%),
-    radial-gradient(ellipse 560px 180px at 92% 80%, rgba(21, 119, 201, 0.08), transparent 50%),
+    radial-gradient(ellipse 820px 200px at 12% -20%, rgba(var(--accent-2-rgb), 0.18), transparent 55%),
+    radial-gradient(ellipse 560px 180px at 92% 80%, rgba(var(--accent-rgb), 0.08), transparent 50%),
     linear-gradient(185deg, #f6f9fc 0%, var(--surface-2) 48%, #eef4f9 100%);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -1288,7 +1297,7 @@ $marcas-strip-gap: 14px;
     width: 220px;
     height: 220px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(21, 119, 201, 0.1) 0%, transparent 68%);
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.1) 0%, transparent 68%);
     pointer-events: none;
   }
 }
@@ -1448,8 +1457,8 @@ $marcas-strip-gap: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(21, 119, 201, 0.08);
-  border: 1px solid rgba(21, 119, 201, 0.12);
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
 
   mat-icon {
     font-size: 22px;

@@ -15,14 +15,7 @@ html, body {
   background-color: #fafafa;
 }
 
-:root {
-  /* Logo PNG: rojos ligeramente más fríos/barberry para armonizar con la paleta azul del taller. */
-  --ovycar-logo-tone: saturate(0.76) hue-rotate(330deg) contrast(1.03) brightness(1.015);
-}
 
-img[src*='logo-taller-nuevo'] {
-  filter: var(--ovycar-logo-tone);
-}
 
 /* Material Design overrides */
 .mat-mdc-card {

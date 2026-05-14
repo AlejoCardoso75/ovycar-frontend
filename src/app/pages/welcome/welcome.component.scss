@@ -128,19 +128,13 @@
   flex-shrink: 0;
 }
 
-.brand-ring {
-  padding: 2px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, rgba(21, 119, 201, 0.18), rgba(21, 119, 201, 0.06));
-}
-
 .brand-img {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  object-fit: cover;
   display: block;
-  border: 2px solid var(--surface);
+  height: clamp(52px, 8vw, 72px);
+  width: auto;
+  max-width: min(260px, 52vw);
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .brand-titles {

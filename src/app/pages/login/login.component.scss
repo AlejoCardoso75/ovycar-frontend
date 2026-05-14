@@ -56,9 +56,10 @@
 
   .logo {
     width: auto;
-    max-width: min(300px, 88vw);
+    max-width: min(168px, 55vw);
     height: auto;
-    margin-bottom: 24px;
+    max-height: 140px;
+    margin-bottom: 20px;
     object-fit: contain;
     display: inline-block;
   }

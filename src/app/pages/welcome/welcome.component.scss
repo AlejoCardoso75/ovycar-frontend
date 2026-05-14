@@ -270,6 +270,36 @@
     border-color: rgba(21, 119, 201, 0.25);
     background: #f7fafc;
   }
+
+  &.header-phone-dual {
+    cursor: default;
+    gap: 8px;
+
+    .header-phone-numbers {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      line-height: 1.25;
+
+      a {
+        color: inherit;
+        font-weight: 700;
+        text-decoration: none;
+
+        &:hover {
+          color: var(--accent);
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+      }
+    }
+
+    .header-phone-dot {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+  }
 }
 
 .btn-garage-login.mat-mdc-button-base {
@@ -1442,6 +1472,13 @@ $marcas-strip-gap: 14px;
   color: var(--text);
   line-height: 1.45;
   font-size: 1.0625rem;
+
+  &.contact-phones {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 
   a {
     color: var(--accent);

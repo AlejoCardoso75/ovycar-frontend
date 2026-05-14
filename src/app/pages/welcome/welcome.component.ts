@@ -14,7 +14,12 @@ import { AuthService } from '../../services/auth.service';
 })
 export class WelcomeComponent implements OnInit {
   readonly telefonoTaller = '311 224 0983';
-  readonly whatsappLink = 'https://wa.me/573112240983';
+  /** Segunda línea telefónica (WhatsApp no cambia — sigue asociado al número principal). */
+  readonly telefonoTaller2 = '316 307 0025';
+  /** Mensaje que se abre prefijado al escribir por WhatsApp desde la web. */
+  private readonly whatsappMensajePorDefecto =
+    'Hola. Me gustaría recibir información o agendar un diagnóstico.';
+  readonly whatsappLink = `https://wa.me/573112240983?text=${encodeURIComponent(this.whatsappMensajePorDefecto)}`;
 
   /** Marcas habituales (logos SVG locales, basados en Simple Icons — MIT). */
   readonly marcasAtendidas = [
